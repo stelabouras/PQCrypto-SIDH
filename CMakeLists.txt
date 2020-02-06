@@ -4,7 +4,7 @@ enable_language(ASM)
 
 set (VERSION 3.2.0)
 
-# cmake -DARCH=x86|x64|arm|arm64 -DOPT_LEVEL_GENERIC=true|false
+# cmake -Dx86=true|x64=true|arm=true|arm64=true -DOPT_LEVEL_GENERIC=true|false
 
 option(x64 "Set this to true to build for a x64 (64 bit) architecture." OFF)
 option(x86 "Set this to true to build for a x86 (32 bit) architecture." OFF)
