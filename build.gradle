@@ -1,0 +1,35 @@
+// Top-level build setting to create the SIDH AAR for Android. The AAR contains the SIDH
+// shared object library The directory 'android-sidh' contains the actual 'build.gradle' file.
+
+// Just as a remainder - an .aar file can include the following types of files:
+//
+//   /AndroidManifest.xml (mandatory)
+//   /classes.jar (mandatory)
+//   /res/ (mandatory)
+//   /R.txt (mandatory)
+//   /assets/ (optional)
+//   /libs/*.jar (optional)
+//   /jni//*.so (optional)
+//   /proguard.txt (optional)
+//   /lint.jar (optional)
+//
+
+buildscript {
+    repositories {
+        jcenter()
+        google()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.5.0'
+//        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+    }
+}
+

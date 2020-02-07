@@ -253,4 +253,7 @@ paket-files/
 
 cmake-build-debug/
 *.a
+.gradle/
+build/
+.cxx/
 

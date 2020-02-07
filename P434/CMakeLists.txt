@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
 
-add_library (sidh_434 ${LIBRARY_BUILD_TYPE} ${OBJECTS_434})
-add_library (sidh_434_comp ${LIBRARY_BUILD_TYPE} ${OBJECTS_434_COMP})
 
 
 set (arith_src ${test_base}/arith_tests-p434.c ${test_base}/test_extras.c)
