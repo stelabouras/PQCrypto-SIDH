@@ -19,7 +19,7 @@
 #define SIDH_SIDHWRAPPER_H
 
 #include <cstddef>
-#include <bits/unique_ptr.h>
+#include <memory>
 
 class SidhWrapper {
 public:

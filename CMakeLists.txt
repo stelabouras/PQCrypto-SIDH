@@ -108,7 +108,10 @@ endif()
 
 set (ADDITIONAL_SETTING "-march=native")
 
-if (CMAKE_C_COMPILER STREQUAL "clang")
+set(clang_found "-1")
+string(FIND ${CMAKE_C_COMPILER} "clang" clang_found REVERSE)
+
+if (NOT clang_found STREQUAL "-1")
    if (ARM_TARGET)
       set(ADDITIONAL_SETTING "")
    endif()
@@ -190,7 +193,7 @@ add_library(${sidhLibName} SHARED ${cpp_lib_src})
 target_link_libraries(${sidhLibName} PUBLIC sidh_434 sidh_503 sidh_610 sidh_751)
 target_include_directories(${sidhLibName} PRIVATE ${CMAKE_SOURCE_DIR}/src )
 
-if (G_TESTS)
+if (G_TESTS AND NOT ANDROID)
     # Download and unpack googletest at configure time.
     configure_file(CMakeLists_gtest.txt.in googletest-download/CMakeLists.txt)
     execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
