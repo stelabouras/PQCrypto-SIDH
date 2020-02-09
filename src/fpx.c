@@ -4,19 +4,6 @@
 * Abstract: core functions over GF(p) and GF(p^2)
 *********************************************************************************************/
 
-
-void clear_words(void* mem, digit_t nwords)
-{ // Clear digits from memory. "nwords" indicates the number of digits to be zeroed.
-  // This function uses the volatile type qualifier to inform the compiler not to optimize out the memory clearing.
-    unsigned int i;
-    volatile digit_t *v = mem; 
-
-    for (i = 0; i < nwords; i++) {
-        v[i] = 0;
-    }
-}
-
-
 static void fp2_encode(const f2elm_t x, unsigned char *enc)
 { // Conversion of GF(p^2) element from Montgomery to standard representation, and encoding by removing leading 0 bytes
     unsigned int i;
@@ -79,16 +66,6 @@ void from_mont(const felm_t ma, felm_t c)
     fpmul_mont(ma, one, c);
     fpcorrection(c);
 }
-
-
-void copy_words(const digit_t* a, digit_t* c, const unsigned int nwords)
-{ // Copy wordsize digits, c = a, where lng(a) = nwords.
-    unsigned int i;
-        
-    for (i = 0; i < nwords; i++)                      
-        c[i] = a[i];
-}
-
 
 void fpmul_mont(const felm_t ma, const felm_t mb, felm_t mc)
 { // Multiprecision multiplication, c = a*b mod p.
@@ -720,49 +697,6 @@ __inline unsigned int mp_add(const digit_t* a, const digit_t* b, digit_t* c, con
     }
 
     return carry;
-}
-
-
-void mp_shiftleft(digit_t* x, unsigned int shift, const unsigned int nwords)
-{
-    unsigned int i, j = 0;
-
-    while (shift > RADIX) {
-        j += 1;
-        shift -= RADIX;
-    }
-
-    for (i = 0; i < nwords-j; i++) 
-        x[nwords-1-i] = x[nwords-1-i-j];
-    for (i = nwords-j; i < nwords; i++) 
-        x[nwords-1-i] = 0;
-    if (shift != 0) {
-        for (j = nwords-1; j > 0; j--) 
-            SHIFTL(x[j], x[j-1], shift, x[j], RADIX);
-        x[0] <<= shift;
-    }
-}
-
-
-void mp_shiftr1(digit_t* x, const unsigned int nwords)
-{ // Multiprecision right shift by one.
-    unsigned int i;
-
-    for (i = 0; i < nwords-1; i++) {
-        SHIFTR(x[i+1], x[i], 1, x[i], RADIX);
-    }
-    x[nwords-1] >>= 1;
-}
-
-
-void mp_shiftl1(digit_t* x, const unsigned int nwords)
-{ // Multiprecision left shift by one.
-    int i;
-
-    for (i = nwords-1; i > 0; i--) {
-        SHIFTL(x[i], x[i-1], 1, x[i], RADIX);
-    }
-    x[0] <<= 1;
 }
 
 #ifdef COMPRESS

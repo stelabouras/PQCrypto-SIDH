@@ -7,6 +7,7 @@
 #ifndef P503_INTERNAL_H
 #define P503_INTERNAL_H
 
+#include "../common/common_funcs.h"
 #include "../config.h"
  
 
@@ -103,7 +104,25 @@ typedef point_proj point_proj_t[1];
     typedef f2elm_t publickey_t[3];      
 #endif
 
+// Definitions to use/map function names to specific SIDH types.
+// necessary to avoid multiple definitions when combining the various
+// SIDH modules into a single library
+#define from_fp2mont    from_fp2montp503
+#define from_mont       from_montp503
+#define mp_add          mp_addp503
+#define mp_sub          mp_subp503
+#define to_fp2mont      to_fp2montp503
+#define to_mont         to_montp503
+#define digit_x_digit   digit_x_digitp503
+#define mp_mul          mp_mulp503
+#define rdc_mont        rdc_montp503
 
+#define xDBL            xDBLp503
+#define get_4_isog      get_4_isogp503
+#define eval_4_isog     eval_4_isogp503
+#define xTPL            xTPLp503
+#define get_3_isog      get_3_isogp503
+#define eval_3_isog     eval_3_isogp503
 
 /**************** Function prototypes ****************/
 /************* Multiprecision functions **************/ 
@@ -127,15 +146,6 @@ void mp_subadd503x2_asm(const digit_t* a, const digit_t* b, digit_t* c);
 
 // Double 2x503-bit multiprecision subtraction, c = c-a-b, where c > a and c > b
 void mp_dblsub503x2_asm(const digit_t* a, const digit_t* b, digit_t* c);
-
-// Multiprecision left shift
-void mp_shiftleft(digit_t* x, unsigned int shift, const unsigned int nwords);
-
-// Multiprecision right shift by one
-void mp_shiftr1(digit_t* x, const unsigned int nwords);
-
-// Multiprecision left right shift by one    
-void mp_shiftl1(digit_t* x, const unsigned int nwords);
 
 // Digit multiplication, digit * digit -> 2-digit result
 void digit_x_digit(const digit_t a, const digit_t b, digit_t* c); 
@@ -246,22 +256,12 @@ void mont_n_way_inv(const f2elm_t* vec, const int n, f2elm_t* out);
 
 /************ Elliptic curve and isogeny functions *************/
 
-// Computes the j-invariant of a Montgomery curve with projective constant.
-void j_inv(const f2elm_t A, const f2elm_t C, f2elm_t jinv);
-
-// Simultaneous doubling and differential addition.
-void xDBLADD(point_proj_t P, point_proj_t Q, const f2elm_t xPQ, const f2elm_t A24);
+/************ Elliptic curve and isogeny functions *************/
 
 // Doubling of a Montgomery point in projective coordinates (X:Z).
 void xDBL(const point_proj_t P, point_proj_t Q, const f2elm_t A24plus, const f2elm_t C24);
-
-// Computes [2^e](X:Z) on Montgomery curve with projective constant via e repeated doublings.
-void xDBLe(const point_proj_t P, point_proj_t Q, const f2elm_t A24plus, const f2elm_t C24, const int e);
-
-// Differential addition.
-void xADD(point_proj_t P, const point_proj_t Q, const f2elm_t xPQ);
-
 // Computes the corresponding 4-isogeny of a projective Montgomery point (X4:Z4) of order 4.
+
 void get_4_isog(const point_proj_t P, f2elm_t A24plus, f2elm_t C24, f2elm_t* coeff);
 
 // Evaluates the isogeny at the point (X:Z) in the domain of the isogeny.
@@ -270,20 +270,33 @@ void eval_4_isog(point_proj_t P, f2elm_t* coeff);
 // Tripling of a Montgomery point in projective coordinates (X:Z).
 void xTPL(const point_proj_t P, point_proj_t Q, const f2elm_t A24minus, const f2elm_t A24plus);
 
-// Computes [3^e](X:Z) on Montgomery curve with projective constant via e repeated triplings.
-void xTPLe(const point_proj_t P, point_proj_t Q, const f2elm_t A24minus, const f2elm_t A24plus, const int e);
-
 // Computes the corresponding 3-isogeny of a projective Montgomery point (X3:Z3) of order 3.
 void get_3_isog(const point_proj_t P, f2elm_t A24minus, f2elm_t A24plus, f2elm_t* coeff);
 
 // Computes the 3-isogeny R=phi(X:Z), given projective point (X3:Z3) of order 3 on a Montgomery curve and a point P with coefficients given in coeff.
 void eval_3_isog(point_proj_t Q, const f2elm_t* coeff);
 
+#if 0
+// Computes the j-invariant of a Montgomery curve with projective constant.
+void j_inv(const f2elm_t A, const f2elm_t C, f2elm_t jinv);
+
+// Simultaneous doubling and differential addition.
+void xDBLADD(point_proj_t P, point_proj_t Q, const f2elm_t xPQ, const f2elm_t A24);
+
+// Computes [2^e](X:Z) on Montgomery curve with projective constant via e repeated doublings.
+void xDBLe(const point_proj_t P, point_proj_t Q, const f2elm_t A24plus, const f2elm_t C24, const int e);
+
+// Differential addition.
+void xADD(point_proj_t P, const point_proj_t Q, const f2elm_t xPQ);
+
+// Computes [3^e](X:Z) on Montgomery curve with projective constant via e repeated triplings.
+void xTPLe(const point_proj_t P, point_proj_t Q, const f2elm_t A24minus, const f2elm_t A24plus, const int e);
+
 // 3-way simultaneous inversion
 void inv_3_way(f2elm_t z1, f2elm_t z2, f2elm_t z3);
 
 // Given the x-coordinates of P, Q, and R, returns the value A corresponding to the Montgomery curve E_A: y^2=x^3+A*x^2+x such that R=Q-P on E_A.
 void get_A(const f2elm_t xP, const f2elm_t xQ, const f2elm_t xR, f2elm_t A);
-
+#endif
 
 #endif

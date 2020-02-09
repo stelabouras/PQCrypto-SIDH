@@ -24,7 +24,7 @@ void xDBL(const point_proj_t P, point_proj_t Q, const f2elm_t A24plus, const f2e
 }
 
 
-void xDBLe(const point_proj_t P, point_proj_t Q, const f2elm_t A24plus, const f2elm_t C24, const int e)
+static void xDBLe(const point_proj_t P, point_proj_t Q, const f2elm_t A24plus, const f2elm_t C24, const int e)
 { // Computes [2^e](X:Z) on Montgomery curve with projective constant via e repeated doublings.
   // Input: projective Montgomery x-coordinates P = (XP:ZP), such that xP=XP/ZP and Montgomery curve constants A+2C and 4C.
   // Output: projective Montgomery x-coordinates Q <- (2^e)*P.
@@ -112,7 +112,7 @@ void eval_4_isog(point_proj_t P, f2elm_t* coeff)
 }
 
 
-void xTPL(const point_proj_t P, point_proj_t Q, const f2elm_t A24minus, const f2elm_t A24plus)              
+void xTPL(const point_proj_t P, point_proj_t Q, const f2elm_t A24minus, const f2elm_t A24plus)
 { // Tripling of a Montgomery point in projective coordinates (X:Z).
   // Input: projective Montgomery x-coordinates P = (X:Z), where x=X/Z and Montgomery curve constants A24plus = A+2C and A24minus = A-2C.
   // Output: projective Montgomery x-coordinates Q = 3*P = (X3:Z3).
@@ -143,7 +143,7 @@ void xTPL(const point_proj_t P, point_proj_t Q, const f2elm_t A24minus, const f2
 }
 
 
-void xTPLe(const point_proj_t P, point_proj_t Q, const f2elm_t A24minus, const f2elm_t A24plus, const int e)
+static void xTPLe(const point_proj_t P, point_proj_t Q, const f2elm_t A24minus, const f2elm_t A24plus, const int e)
 { // Computes [3^e](X:Z) on Montgomery curve with projective constant via e repeated triplings.
   // Input: projective Montgomery x-coordinates P = (XP:ZP), such that xP=XP/ZP and Montgomery curve constants A24plus = A+2C and A24minus = A-2C.
   // Output: projective Montgomery x-coordinates Q <- (3^e)*P.
@@ -202,7 +202,7 @@ void eval_3_isog(point_proj_t Q, const f2elm_t* coeff)
 }
 
 
-void inv_3_way(f2elm_t z1, f2elm_t z2, f2elm_t z3)
+static void inv_3_way(f2elm_t z1, f2elm_t z2, f2elm_t z3)
 { // 3-way simultaneous inversion
   // Input:  z1,z2,z3
   // Output: 1/z1,1/z2,1/z3 (override inputs).
@@ -219,7 +219,7 @@ void inv_3_way(f2elm_t z1, f2elm_t z2, f2elm_t z3)
 }
 
 
-void get_A(const f2elm_t xP, const f2elm_t xQ, const f2elm_t xR, f2elm_t A)
+static void get_A(const f2elm_t xP, const f2elm_t xQ, const f2elm_t xR, f2elm_t A)
 { // Given the x-coordinates of P, Q, and R, returns the value A corresponding to the Montgomery curve E_A: y^2=x^3+A*x^2+x such that R=Q-P on E_A.
   // Input:  the x-coordinates xP, xQ, and xR of the points P, Q and R.
   // Output: the coefficient A corresponding to the curve E_A: y^2=x^3+A*x^2+x.
@@ -242,7 +242,7 @@ void get_A(const f2elm_t xP, const f2elm_t xQ, const f2elm_t xR, f2elm_t A)
 }
 
 
-void j_inv(const f2elm_t A, const f2elm_t C, f2elm_t jinv)
+static void j_inv(const f2elm_t A, const f2elm_t C, f2elm_t jinv)
 { // Computes the j-invariant of a Montgomery curve with projective constant.
   // Input: A,C in GF(p^2).
   // Output: j=256*(A^2-3*C^2)^3/(C^4*(A^2-4*C^2)), which is the j-invariant of the Montgomery curve B*y^2=x^3+(A/C)*x^2+x or (equivalently) j-invariant of B'*y^2=C*x^3+A*x^2+C*x.
@@ -267,7 +267,7 @@ void j_inv(const f2elm_t A, const f2elm_t C, f2elm_t jinv)
 }
 
 
-void xDBLADD(point_proj_t P, point_proj_t Q, const f2elm_t xPQ, const f2elm_t A24)
+static void xDBLADD(point_proj_t P, point_proj_t Q, const f2elm_t xPQ, const f2elm_t A24)
 { // Simultaneous doubling and differential addition.
   // Input: projective Montgomery points P=(XP:ZP) and Q=(XQ:ZQ) such that xP=XP/ZP and xQ=XQ/ZQ, affine difference xPQ=x(P-Q) and Montgomery curve constant A24=(A+2)/4.
   // Output: projective Montgomery points P <- 2*P = (X2P:Z2P) such that x(2P)=X2P/Z2P, and Q <- P+Q = (XQP:ZQP) such that = x(Q+P)=XQP/ZQP. 

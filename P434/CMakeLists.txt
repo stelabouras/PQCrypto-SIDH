@@ -32,8 +32,8 @@ add_dependencies(SIKE_434_compressed_test sidh_434_comp)
 ### KAT tests - set correct base directory, tests need to open KAT files
 ### when using Clion set the working directory of the run configuration to $PROJECT_DIR$
 
-add_library (sidh_for_testing_434 ${LIBRARY_BUILD_TYPE} ${OBJECTS_434} ${AES_OBJS})
-add_library (sidh_for_testing_comp_434 ${LIBRARY_BUILD_TYPE} ${OBJECTS_434_COMP} ${AES_OBJS})
+add_library (sidh_for_testing_434 ${LIBRARY_BUILD_TYPE} ${OBJECTS_434} ${AES_OBJS} ${common_src})
+add_library (sidh_for_testing_comp_434 ${LIBRARY_BUILD_TYPE} ${OBJECTS_434_COMP} ${AES_OBJS} ${common_src})
 
 add_executable(PQC_KAT_kem_434_test ${test_base}/PQCtestKAT_kem434.c ${RNG_OBJS})
 target_link_libraries(PQC_KAT_kem_434_test sidh_for_testing_434 ${LDFLAGS} ${ARM_SETTING})

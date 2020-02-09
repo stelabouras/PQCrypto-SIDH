@@ -27,11 +27,12 @@ if (ANDROID)
     endif()
 endif()
 
+set(G_TESTS true)    # enable google Test framework and unit tests
+
 set(use_mulx true)
 set(use_adx true)
 
 set (OPT -O3)
-set (CMAKE_C_COMPILER "clang")
 
 if (NOT x64 AND NOT x86 AND NOT arm AND NOT arm64)
     message(FATAL_ERROR "No architecture selected.")
@@ -55,7 +56,9 @@ endif()
 
 if(x64)
     set(ARCHITECTURE _AMD64_)
-    set(USE_OPT_LEVEL "_FAST_")
+#    set(USE_OPT_LEVEL "_FAST_")    # Disable __FAST_, X64 assembly code is not position independent
+    set(USE_OPT_LEVEL "_GENERIC_")
+
 endif()
 
 if(x86)
@@ -120,15 +123,18 @@ MESSAGE(STATUS "flags: ${CMAKE_C_FLAGS}")
 set(src_base ${CMAKE_SOURCE_DIR}/src)
 set(test_base ${CMAKE_SOURCE_DIR}/tests)
 
-if (${USE_OPT_LEVEL} STREQUAL "_GENERIC")
+set(common_src
+        ${src_base}/common/common_funcs.h
+        ${src_base}/common/common_funcs.c)
+
+if (${USE_OPT_LEVEL} STREQUAL "_GENERIC_")
     set(EXTRA_OBJECTS_434 ${src_base}/P434/generic/fp_generic.c)
     set(EXTRA_OBJECTS_503 ${src_base}/P503/generic/fp_generic.c)
     set(EXTRA_OBJECTS_610 ${src_base}/P610/generic/fp_generic.c)
     set(EXTRA_OBJECTS_751 ${src_base}/P751/generic/fp_generic.c)
 elseif(${USE_OPT_LEVEL} STREQUAL "_FAST_")
     if (x64)
-#        set(EXTRA_OBJECTS_434 ${src_base}/P434/AMD64/fp_x64.c ${src_base}/P434/AMD64/fp_x64_asm.S) because -fPIC doesn't work due to no-reloc code in assembly
-        set(EXTRA_OBJECTS_434 ${src_base}/P434/generic/fp_generic.c)
+        set(EXTRA_OBJECTS_434 ${src_base}/P434/AMD64/fp_x64.c ${src_base}/P434/AMD64/fp_x64_asm.S)
         set(EXTRA_OBJECTS_503 ${src_base}/P503/AMD64/fp_x64.c ${src_base}/P503/AMD64/fp_x64_asm.S)
         set(EXTRA_OBJECTS_610 ${src_base}/P610/AMD64/fp_x64.c ${src_base}/P610/AMD64/fp_x64_asm.S)
         set(EXTRA_OBJECTS_751 ${src_base}/P751/AMD64/fp_x64.c ${src_base}/P751/AMD64/fp_x64_asm.S)
@@ -152,21 +158,71 @@ set(OBJECTS_751_COMP ${src_base}/P751/P751_compressed.c ${EXTRA_OBJECTS_751} ${s
 set(AES_OBJS ${test_base}/aes/aes.c ${test_base}/aes/aes_c.c)
 set(RNG_OBJS ${test_base}/rng/rng.c)
 
-add_library (sidh_434 ${LIBRARY_BUILD_TYPE} ${OBJECTS_434})
-add_library (sidh_434_comp ${LIBRARY_BUILD_TYPE} ${OBJECTS_434_COMP})
+add_library (sidh_434 ${LIBRARY_BUILD_TYPE} ${OBJECTS_434} ${common_src})
+add_library (sidh_434_comp ${LIBRARY_BUILD_TYPE} ${OBJECTS_434_COMP} ${common_src})
+
+add_library (sidh_503 ${LIBRARY_BUILD_TYPE} ${OBJECTS_503} ${common_src})
+add_library (sidh_503_comp ${LIBRARY_BUILD_TYPE} ${OBJECTS_503_COMP} ${common_src})
+
+add_library (sidh_610 ${LIBRARY_BUILD_TYPE} ${OBJECTS_610} ${common_src})
+add_library (sidh_610_comp ${LIBRARY_BUILD_TYPE} ${OBJECTS_610_COMP} ${common_src})
+
+add_library (sidh_751 ${LIBRARY_BUILD_TYPE} ${OBJECTS_751} ${common_src})
+add_library (sidh_751_comp ${LIBRARY_BUILD_TYPE} ${OBJECTS_751_COMP} ${common_src})
+
 
 add_subdirectory(P434)
 add_subdirectory(P503)
 add_subdirectory(P610)
 add_subdirectory(P751)
 
+set(sidhLibName sidhCppLib)
 set(cpp_lib_src
+        ${CMAKE_SOURCE_DIR}/cpp/SidhWrapper.h
+        ${CMAKE_SOURCE_DIR}/cpp/SidhWrapper.cpp
         ${CMAKE_SOURCE_DIR}/cpp/SidhP434Wrapper.cpp
-        ${CMAKE_SOURCE_DIR}/cpp/SidhWrapper.h)
+        ${CMAKE_SOURCE_DIR}/cpp/SidhP503Wrapper.cpp
+        )
 
-add_library(cpp_sidh_lib SHARED ${cpp_lib_src})
-target_link_libraries(cpp_sidh_lib PUBLIC sidh_434)
-target_include_directories(cpp_sidh_lib PRIVATE ${CMAKE_SOURCE_DIR}/src )
+add_library(${sidhLibName} SHARED ${cpp_lib_src})
+target_link_libraries(${sidhLibName} PUBLIC sidh_434 sidh_503)
+target_include_directories(${sidhLibName} PRIVATE ${CMAKE_SOURCE_DIR}/src )
+
+if (G_TESTS)
+    # Download and unpack googletest at configure time.
+    configure_file(CMakeLists_gtest.txt.in googletest-download/CMakeLists.txt)
+    execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
+            RESULT_VARIABLE result
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
+    if(result)
+        message(FATAL_ERROR "CMake step for googletest failed: ${result}")
+    endif()
+    execute_process(COMMAND ${CMAKE_COMMAND} --build .
+            RESULT_VARIABLE result
+            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/googletest-download )
+    if(result)
+        message(FATAL_ERROR "Build step for googletest failed: ${result}")
+    endif()
+
+    # Prevent overriding the parent project's compiler/linker
+    # settings on Windows
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+
+    # Add googletest directly to our build. This defines
+    # the gtest and gtest_main targets.
+    add_subdirectory(${CMAKE_CURRENT_BINARY_DIR}/googletest-src
+            ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
+            EXCLUDE_FROM_ALL)
+
+    # The gtest/gtest_main targets carry header search path
+    # dependencies automatically when using CMake 2.8.11 or
+    # later. Otherwise we have to add them here ourselves.
+    if (CMAKE_VERSION VERSION_LESS 2.8.11)
+        include_directories("${gtest_SOURCE_DIR}/include")
+    endif()
+
+    add_subdirectory(unittests)
+endif()
 
 if (ANDROID)
     message(STATUS "Configure for Android Configuration ${ANDROID_ABI}.")

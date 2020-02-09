@@ -27,11 +27,11 @@ const uint64_t p503p1[NWORDS64_FIELD]            = { 0x0000000000000000, 0x00000
 const uint64_t p503x2[NWORDS64_FIELD]            = { 0xFFFFFFFFFFFFFFFE, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0x57FFFFFFFFFFFFFF,
                                                      0x2610B7B44423CF41, 0x3737ED90F6FCFB5E, 0xC08B8D7BB4EF49A0, 0x0080CDEA83023C3C }; 
 // Order of Alice's subgroup
-const uint64_t Alice_order[NWORDS64_ORDER]       = { 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0400000000000000 }; 
+static const uint64_t Alice_order[NWORDS64_ORDER]       = { 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0400000000000000 };
 // Order of Bob's subgroup
-const uint64_t Bob_order[NWORDS64_ORDER]         = { 0xC216F6888479E82B, 0xE6FDB21EDF9F6BC4, 0x1171AF769DE93406, 0x1019BD5060478798 };
+static const uint64_t Bob_order[NWORDS64_ORDER]         = { 0xC216F6888479E82B, 0xE6FDB21EDF9F6BC4, 0x1171AF769DE93406, 0x1019BD5060478798 };
 // Alice's generator values {XPA0 + XPA1*i, XQA0 + XQA1*i, XRA0 + XRA1*i} in GF(p503^2), expressed in Montgomery representation
-const uint64_t A_gen[6*NWORDS64_FIELD]           = { 0x5D083011589AD893, 0xADFD8D2CB67D0637, 0x330C9AC34FFB6361, 0xF0D47489A2E805A2,
+static const uint64_t A_gen[6*NWORDS64_FIELD]           = { 0x5D083011589AD893, 0xADFD8D2CB67D0637, 0x330C9AC34FFB6361, 0xF0D47489A2E805A2,
                                                      0x27E2789259C6B8DC, 0x63866A2C121931B9, 0x8D4C65A7137DCF44, 0x003A183AE5967B3F,   // XPA0
                                                      0x7E3541B8C96D1519, 0xD3ADAEEC0D61A26C, 0xC0A2219CE7703DD9, 0xFF3E46658FCDBC52,
                                                      0xD5B38DEAE6E196FF, 0x1AAC826364956D58, 0xEC9F4875B9A5F27A, 0x001B0B475AB99843,   // XPA1
@@ -44,7 +44,7 @@ const uint64_t A_gen[6*NWORDS64_FIELD]           = { 0x5D083011589AD893, 0xADFD8
                                                      0xC466CAB0F73C2E5B, 0x7B1817148FB2CF9C, 0x873E87C099E470A0, 0xBB17AC6D17A7BAC1,
                                                      0xA146FDCD0F2E2A58, 0x88B311E9CEAB6201, 0x37604CF5C7951757, 0x0006804071C74BF9 }; // XRA1
 // Bob's generator values {XPB0, XQB0, XRB0 + XRB1*i} in GF(p503^2), expressed in Montgomery representation
-const uint64_t B_gen[6*NWORDS64_FIELD]           = { 0xDF630FC5FB2468DB, 0xC30C5541C102040E, 0x3CDC9987B76511FC, 0xF54B5A09353D0CDD, 
+static const uint64_t B_gen[6*NWORDS64_FIELD]           = { 0xDF630FC5FB2468DB, 0xC30C5541C102040E, 0x3CDC9987B76511FC, 0xF54B5A09353D0CDD,
                                                      0x3ADBA8E00703C42F, 0x8253F9303DDC95D0, 0x62D30778763ABFD7, 0x001CD00FB581CD55,   // XPB0
                                                      0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 
                                                      0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000,   // XPB1
@@ -57,22 +57,22 @@ const uint64_t B_gen[6*NWORDS64_FIELD]           = { 0xDF630FC5FB2468DB, 0xC30C5
                                                      0x03E03FF342F5F304, 0x993D604D7B4B6E56, 0x80412F4D9280E71F, 0x0FFDC9EF990B3982,
                                                      0xE584E64C51604931, 0x1374F42AC8B0BBD7, 0x07D5BC37DFA41A5F, 0x00396CCFD61FD34C }; // XRB1
 // Montgomery constant Montgomery_R2 = (2^512)^2 mod p503
-const uint64_t Montgomery_R2[NWORDS64_FIELD]     = { 0x5289A0CF641D011F, 0x9B88257189FED2B9, 0xA3B365D58DC8F17A, 0x5BC57AB6EFF168EC,
+static const uint64_t Montgomery_R2[NWORDS64_FIELD]     = { 0x5289A0CF641D011F, 0x9B88257189FED2B9, 0xA3B365D58DC8F17A, 0x5BC57AB6EFF168EC,
                                                      0x9E51998BD84D4423, 0xBF8999CBAC3B5695, 0x46E9127BCE14CDB6, 0x003F6CFCE8B81771 };                                                   
 // Value one in Montgomery representation 
-const uint64_t Montgomery_one[NWORDS64_FIELD]    = { 0x00000000000003F9, 0x0000000000000000, 0x0000000000000000, 0xB400000000000000, 
+static const uint64_t Montgomery_one[NWORDS64_FIELD]    = { 0x00000000000003F9, 0x0000000000000000, 0x0000000000000000, 0xB400000000000000,
                                                      0x63CB1A6EA6DED2B4, 0x51689D8D667EB37D, 0x8ACD77C71AB24142, 0x0026FBAEC60F5953 };
 
 
 // Fixed parameters for isogeny tree computation
-const unsigned int strat_Alice[MAX_Alice-1] = { 
+static const unsigned int strat_Alice[MAX_Alice-1] = {
 61, 32, 16, 8, 4, 2, 1, 1, 2, 1, 1, 4, 2, 1, 1, 2, 1, 1, 8, 4, 2, 1, 1, 2, 1, 1, 
 4, 2, 1, 1, 2, 1, 1, 16, 8, 4, 2, 1, 1, 2, 1, 1, 4, 2, 1, 1, 2, 1, 1, 8, 4, 2, 1, 
 1, 2, 1, 1, 4, 2, 1, 1, 2, 1, 1, 29, 16, 8, 4, 2, 1, 1, 2, 1, 1, 4, 2, 1, 1, 2, 1, 
 1, 8, 4, 2, 1, 1, 2, 1, 1, 4, 2, 1, 1, 2, 1, 1, 13, 8, 4, 2, 1, 1, 2, 1, 1, 4, 2, 
 1, 1, 2, 1, 1, 5, 4, 2, 1, 1, 2, 1, 1, 2, 1, 1, 1 };
 
-const unsigned int strat_Bob[MAX_Bob-1] = { 
+static const unsigned int strat_Bob[MAX_Bob-1] = {
 71, 38, 21, 13, 8, 4, 2, 1, 1, 2, 1, 1, 4, 2, 1, 1, 2, 1, 1, 5, 4, 2, 1, 1, 2, 1, 
 1, 2, 1, 1, 1, 9, 5, 3, 2, 1, 1, 1, 1, 2, 1, 1, 1, 4, 2, 1, 1, 1, 2, 1, 1, 17, 9, 
 5, 3, 2, 1, 1, 1, 1, 2, 1, 1, 1, 4, 2, 1, 1, 1, 2, 1, 1, 8, 4, 2, 1, 1, 1, 2, 1, 

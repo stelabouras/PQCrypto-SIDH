@@ -1,9 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
 
-add_library (sidh_503 ${LIBRARY_BUILD_TYPE} ${OBJECTS_503})
-add_library (sidh_503_comp ${LIBRARY_BUILD_TYPE} ${OBJECTS_503_COMP})
-
-
 set (arith_src ${test_base}/arith_tests-p503.c ${test_base}/test_extras.c)
 set(sidh_src ${test_base}/test_SIDHp503.c ${test_base}/test_extras.c)
 set(sike_src ${test_base}/test_SIKEp503.c ${test_base}/test_extras.c)
@@ -34,8 +30,8 @@ add_dependencies(SIKE_503_compressed_test sidh_503_comp)
 ### KAT tests - set correct base directory, tests need to open KAT files
 ### when using Clion set the working directory of the run configuration to $PROJECT_DIR$
 
-add_library (sidh_for_testing_503 ${LIBRARY_BUILD_TYPE} ${OBJECTS_503} ${AES_OBJS})
-add_library (sidh_for_testing_comp_503 ${LIBRARY_BUILD_TYPE} ${OBJECTS_503_COMP} ${AES_OBJS})
+add_library (sidh_for_testing_503 ${LIBRARY_BUILD_TYPE} ${OBJECTS_503} ${AES_OBJS} ${common_src})
+add_library (sidh_for_testing_comp_503 ${LIBRARY_BUILD_TYPE} ${OBJECTS_503_COMP} ${AES_OBJS} ${common_src})
 
 add_executable(PQC_KAT_kem_503_test ${test_base}/PQCtestKAT_kem503.c ${RNG_OBJS})
 target_link_libraries(PQC_KAT_kem_503_test sidh_for_testing_503 ${LDFLAGS} ${ARM_SETTING})

@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
 
-add_library (sidh_610 ${LIBRARY_BUILD_TYPE} ${OBJECTS_610})
-add_library (sidh_610_comp ${LIBRARY_BUILD_TYPE} ${OBJECTS_610_COMP})
-
 
 set (arith_src ${test_base}/arith_tests-p610.c ${test_base}/test_extras.c)
 set(sidh_src ${test_base}/test_SIDHp610.c ${test_base}/test_extras.c)
@@ -34,8 +31,8 @@ add_dependencies(SIKE_610_compressed_test sidh_610_comp)
 ### KAT tests - set correct base directory, tests need to open KAT files
 ### when using Clion set the working directory of the run configuration to $PROJECT_DIR$
 
-add_library (sidh_for_testing_610 ${LIBRARY_BUILD_TYPE} ${OBJECTS_610} ${AES_OBJS})
-add_library (sidh_for_testing_comp_610 ${LIBRARY_BUILD_TYPE} ${OBJECTS_610_COMP} ${AES_OBJS})
+add_library (sidh_for_testing_610 ${LIBRARY_BUILD_TYPE} ${OBJECTS_610} ${AES_OBJS} ${common_src})
+add_library (sidh_for_testing_comp_610 ${LIBRARY_BUILD_TYPE} ${OBJECTS_610_COMP} ${AES_OBJS} ${common_src})
 
 add_executable(PQC_KAT_kem_610_test ${test_base}/PQCtestKAT_kem610.c ${RNG_OBJS})
 target_link_libraries(PQC_KAT_kem_610_test sidh_for_testing_610 ${LDFLAGS} ${ARM_SETTING})
