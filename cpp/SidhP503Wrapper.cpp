@@ -16,17 +16,17 @@
 //
 #include "SidhWrapper.h"
 
-// Include the P434 headers as plain C to get correct functions names
+// Include the P503 headers as plain C to get correct functions names
 #if defined(__cplusplus)
 extern "C"
 {
 #endif
-#include "P434/P434_api.h"
+#include "P503/P503_api.h"
 #if defined(__cplusplus)
 }
 #endif
 
-SidhWrapper::FieldLengthsPtr SidhWrapper::getFieldLengthsP434() {
+SidhWrapper::FieldLengthsPtr SidhWrapper::getFieldLengthsP503() {
     auto fieldLengths = std::make_unique<SidhWrapper::FieldLengths>();
 
     fieldLengths->publicKey = SIDH_PUBLICKEYBYTES;
@@ -37,23 +37,23 @@ SidhWrapper::FieldLengthsPtr SidhWrapper::getFieldLengthsP434() {
     return std::move(fieldLengths);
 }
 
-void SidhWrapper::random_mod_order_A_SIDHp434(unsigned char *random_digits) {
-    ::random_mod_order_A_SIDHp434(random_digits);
+void SidhWrapper::random_mod_order_A_SIDHp503(unsigned char *random_digits) {
+    ::random_mod_order_A_SIDHp503(random_digits);
 }
-void SidhWrapper::random_mod_order_B_SIDHp434(unsigned char *random_digits) {
-    ::random_mod_order_B_SIDHp434(random_digits);
+void SidhWrapper::random_mod_order_B_SIDHp503(unsigned char *random_digits) {
+    ::random_mod_order_B_SIDHp503(random_digits);
 }
-int SidhWrapper::EphemeralKeyGeneration_A_SIDHp434(const unsigned char *PrivateKeyA, unsigned char *PublicKeyA) {
-    return ::EphemeralKeyGeneration_A_SIDHp434(PrivateKeyA, PublicKeyA);
+int SidhWrapper::EphemeralKeyGeneration_A_SIDHp503(const unsigned char *PrivateKeyA, unsigned char *PublicKeyA) {
+    return ::EphemeralKeyGeneration_A_SIDHp503(PrivateKeyA, PublicKeyA);
 }
-int SidhWrapper::EphemeralKeyGeneration_B_SIDHp434(const unsigned char *PrivateKeyB, unsigned char *PublicKeyB) {
-    return ::EphemeralKeyGeneration_B_SIDHp434(PrivateKeyB, PublicKeyB);
+int SidhWrapper::EphemeralKeyGeneration_B_SIDHp503(const unsigned char *PrivateKeyB, unsigned char *PublicKeyB) {
+    return ::EphemeralKeyGeneration_B_SIDHp503(PrivateKeyB, PublicKeyB);
 }
-int SidhWrapper::EphemeralSecretAgreement_A_SIDHp434(const unsigned char *PrivateKeyA, const unsigned char *PublicKeyB,
+int SidhWrapper::EphemeralSecretAgreement_A_SIDHp503(const unsigned char *PrivateKeyA, const unsigned char *PublicKeyB,
                                                      unsigned char *SharedSecretA) {
-    return ::EphemeralSecretAgreement_A_SIDHp434(PrivateKeyA, PublicKeyB, SharedSecretA);
+    return ::EphemeralSecretAgreement_A_SIDHp503(PrivateKeyA, PublicKeyB, SharedSecretA);
 }
-int SidhWrapper::EphemeralSecretAgreement_B_SIDHp434(const unsigned char *PrivateKeyB, const unsigned char *PublicKeyA,
+int SidhWrapper::EphemeralSecretAgreement_B_SIDHp503(const unsigned char *PrivateKeyB, const unsigned char *PublicKeyA,
                                                      unsigned char *SharedSecretB) {
-    return ::EphemeralSecretAgreement_B_SIDHp434(PrivateKeyB, PublicKeyA, SharedSecretB);
+    return ::EphemeralSecretAgreement_B_SIDHp503(PrivateKeyB, PublicKeyA, SharedSecretB);
 }

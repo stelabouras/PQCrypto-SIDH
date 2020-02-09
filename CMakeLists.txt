@@ -182,10 +182,12 @@ set(cpp_lib_src
         ${CMAKE_SOURCE_DIR}/cpp/SidhWrapper.cpp
         ${CMAKE_SOURCE_DIR}/cpp/SidhP434Wrapper.cpp
         ${CMAKE_SOURCE_DIR}/cpp/SidhP503Wrapper.cpp
+        ${CMAKE_SOURCE_DIR}/cpp/SidhP610Wrapper.cpp
+        ${CMAKE_SOURCE_DIR}/cpp/SidhP751Wrapper.cpp
         )
 
 add_library(${sidhLibName} SHARED ${cpp_lib_src})
-target_link_libraries(${sidhLibName} PUBLIC sidh_434 sidh_503)
+target_link_libraries(${sidhLibName} PUBLIC sidh_434 sidh_503 sidh_610 sidh_751)
 target_include_directories(${sidhLibName} PRIVATE ${CMAKE_SOURCE_DIR}/src )
 
 if (G_TESTS)
