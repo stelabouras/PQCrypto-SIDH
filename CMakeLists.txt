@@ -189,9 +189,32 @@ set(cpp_lib_src
         ${CMAKE_SOURCE_DIR}/cpp/SidhP751Wrapper.cpp
         )
 
-add_library(${sidhLibName} SHARED ${cpp_lib_src})
-target_link_libraries(${sidhLibName} PUBLIC sidh_434 sidh_503 sidh_610 sidh_751)
-target_include_directories(${sidhLibName} PRIVATE ${CMAKE_SOURCE_DIR}/src )
+find_package(JNI)
+if (JNI_FOUND)
+    message (STATUS "JNI_INCLUDE_DIRS=${JNI_INCLUDE_DIRS}")
+    message (STATUS "JNI_LIBRARIES=${JNI_LIBRARIES}")
+    include_directories(${JNI_INCLUDE_DIRS})
+
+endif()
+
+if (JNI_FOUND OR ANDROID)
+    set(cpp_lib_src ${cpp_lib_src}
+        ${CMAKE_SOURCE_DIR}/cpp/javaNative/sidh_tests_SidhNativeTests.h
+        ${CMAKE_SOURCE_DIR}/cpp/javaNative/SidhNative.cpp
+        )
+endif ()
+
+if (G_TESTS)
+# Definitions to compile and link tests to the Java Native interface
+add_definitions(-DADD_TESTS)
+set(test_embedded ${CMAKE_SOURCE_DIR}/testsEmbedded)
+set(test_srcs
+        ${test_base}/test_extras.h
+        ${test_base}/test_extras.c
+        ${test_embedded}/arith_tests-p434.c)
+
+set(cpp_lib_src ${cpp_lib_src} ${test_srcs})
+endif()
 
 if (G_TESTS AND NOT ANDROID)
     # Download and unpack googletest at configure time.
@@ -227,7 +250,12 @@ if (G_TESTS AND NOT ANDROID)
     endif()
 
     add_subdirectory(unittests)
+
 endif()
+
+add_library(${sidhLibName} SHARED ${cpp_lib_src})
+target_link_libraries(${sidhLibName} PUBLIC sidh_434 sidh_503 sidh_610 sidh_751)
+target_include_directories(${sidhLibName} PRIVATE ${CMAKE_SOURCE_DIR}/src )
 
 if (ANDROID)
     message(STATUS "Configure for Android Configuration ${ANDROID_ABI}.")
