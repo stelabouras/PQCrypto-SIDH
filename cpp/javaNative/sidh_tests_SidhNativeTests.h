@@ -7,13 +7,19 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#undef sidh_tests_SidhNativeTests_TestsOnly
+#define sidh_tests_SidhNativeTests_TestsOnly 1L
+#undef sidh_tests_SidhNativeTests_TestBenchmarks
+#define sidh_tests_SidhNativeTests_TestBenchmarks 2L
+#undef sidh_tests_SidhNativeTests_EcisogFunctions
+#define sidh_tests_SidhNativeTests_EcisogFunctions 4L
 /*
  * Class:     sidh_tests_SidhNativeTests
  * Method:    runSidhTests
- * Signature: ()I
+ * Signature: (II)Z
  */
-JNIEXPORT jint JNICALL Java_sidh_tests_SidhNativeTests_runSidhTests
-  (JNIEnv *, jclass);
+JNIEXPORT jboolean JNICALL Java_sidh_tests_SidhNativeTests_runSidhTests
+  (JNIEnv *, jclass, jint, jint);
 
 #ifdef __cplusplus
 }

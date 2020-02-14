@@ -211,7 +211,10 @@ set(test_embedded ${CMAKE_SOURCE_DIR}/testsEmbedded)
 set(test_srcs
         ${test_base}/test_extras.h
         ${test_base}/test_extras.c
-        ${test_embedded}/arith_tests-p434.c)
+        ${test_embedded}/arith_tests-p434.c
+        ${test_embedded}/arith_tests-p503.c
+        ${test_embedded}/arith_tests-p610.c
+        ${test_embedded}/arith_tests-p751.c)
 
 set(cpp_lib_src ${cpp_lib_src} ${test_srcs})
 endif()

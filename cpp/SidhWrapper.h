@@ -24,6 +24,9 @@
 class SidhWrapper {
 public:
 
+    /**
+     * @brief Which SIDH type/length to use.
+     */
     enum SidhType {
         P434 = 1,               //!< Normal P434 API
         P434Comp,               //!< Compressed 434
@@ -35,6 +38,9 @@ public:
         P751Comp
     };
 
+    /**
+     * @brief Result of @c getFieldLengths.
+     */
     struct FieldLengths {
         size_t privateKeyA;     //!< length of private key field A
         size_t privateKeyB;     //!< length of private key field B
