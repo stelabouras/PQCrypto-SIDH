@@ -15,6 +15,7 @@ public abstract class SidhNativeTests {
     public static final int TestsOnly = 1;          //!< Test the algorithms only - fast
     public static final int TestBenchmarks = 2;     //!< Benchmarks the algorithms - moderate
     public static final int EcisogFunctions = 4;    //!< Benchmark EC Isogenic function - takes some time :-)
+    public static final int DiffieHellman = 8;      //!< Diffie-Hellman key exchange tests
 
     public static native boolean runSidhTests(int sidhType, int testMask);
 }

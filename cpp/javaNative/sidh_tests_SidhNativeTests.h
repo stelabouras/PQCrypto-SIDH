@@ -13,6 +13,8 @@ extern "C" {
 #define sidh_tests_SidhNativeTests_TestBenchmarks 2L
 #undef sidh_tests_SidhNativeTests_EcisogFunctions
 #define sidh_tests_SidhNativeTests_EcisogFunctions 4L
+#undef sidh_tests_SidhNativeTests_DiffieHellman
+#define sidh_tests_SidhNativeTests_DiffieHellman 8L
 /*
  * Class:     sidh_tests_SidhNativeTests
  * Method:    runSidhTests

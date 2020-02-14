@@ -214,7 +214,12 @@ set(test_srcs
         ${test_embedded}/arith_tests-p434.c
         ${test_embedded}/arith_tests-p503.c
         ${test_embedded}/arith_tests-p610.c
-        ${test_embedded}/arith_tests-p751.c)
+        ${test_embedded}/arith_tests-p751.c
+        ${test_embedded}/test_SIDHp434.c
+        ${test_embedded}/test_SIDHp503.c
+        ${test_embedded}/test_SIDHp610.c
+        ${test_embedded}/test_SIDHp751.c
+        )
 
 set(cpp_lib_src ${cpp_lib_src} ${test_srcs})
 endif()

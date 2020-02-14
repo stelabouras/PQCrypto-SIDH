@@ -158,6 +158,12 @@ int arithTests434(enum RunTestBits runTestBits);
 int arithTests503(enum RunTestBits runTestBits);
 int arithTests610(enum RunTestBits runTestBits);
 int arithTests751(enum RunTestBits runTestBits);
+
+int dhTestsp434();
+int dhTestsp503();
+int dhTestsp610();
+int dhTestsp751();
+
 #endif
 
 #ifdef __cplusplus
@@ -176,18 +182,36 @@ JNI_FUNCTION_TESTS(runSidhTests)(JNIEnv *env, jclass clazz, jint sidhType, jint 
     (void)env;
     (void)clazz;
 
+    bool OK = true;
+
     switch (sidhType) {
         case VAR(P434):
-            return arithTests434((RunTestBits)testMask);
+            OK = OK && arithTests434((RunTestBits)testMask);
+            if (testMask & VAR_TEST(DiffieHellman)) {
+                OK = OK && (dhTestsp434() == 0);
+            }
+            return OK;
 
         case VAR(P503):
-            return arithTests503((RunTestBits)testMask);
+            OK = OK && arithTests503((RunTestBits)testMask);
+            if (testMask & VAR_TEST(DiffieHellman)) {
+                OK = OK && (dhTestsp503() == 0);
+            }
+            return OK;
 
         case VAR(P610):
-            return arithTests610((RunTestBits)testMask);
+            OK = OK && arithTests610((RunTestBits)testMask);
+            if (testMask & VAR_TEST(DiffieHellman)) {
+                OK = OK && (dhTestsp610() == 0);
+            }
+            return OK;
 
         case VAR(P751):
-            return arithTests751((RunTestBits)testMask);
+            OK = OK && arithTests751((RunTestBits)testMask);
+            if (testMask & VAR_TEST(DiffieHellman)) {
+                OK = OK && (dhTestsp751() == 0);
+            }
+            return OK;
 
         default:
             break;
