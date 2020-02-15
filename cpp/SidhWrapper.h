@@ -45,8 +45,7 @@ public:
         size_t privateKeyA;     //!< length of private key field A
         size_t privateKeyB;     //!< length of private key field B
         size_t publicKey;       //!< length of public key field
-        size_t sharedSecretA;   //!< length of shared secret A
-        size_t sharedSecretB;   //!< length of shared secret B
+        size_t sharedSecret;    //!< length of shared secret
     };
     using FieldLengthsPtr = std::unique_ptr<FieldLengths>;
 

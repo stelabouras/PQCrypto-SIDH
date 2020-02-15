@@ -49,8 +49,7 @@ TEST_F(SidhTests751, FieldLengths) {
     ASSERT_EQ(SIDH_SECRETKEYBYTES_A, lengths->privateKeyA);
     ASSERT_EQ(SIDH_SECRETKEYBYTES_B, lengths->privateKeyB);
     ASSERT_EQ(SIDH_PUBLICKEYBYTES, lengths->publicKey);
-    ASSERT_EQ(SIDH_BYTES, lengths->sharedSecretA);
-    ASSERT_EQ(SIDH_BYTES, lengths->sharedSecretB);
+    ASSERT_EQ(SIDH_BYTES, lengths->sharedSecret);
 }
 
 TEST_F(SidhTests751, EphemeralSecret) {
@@ -60,8 +59,8 @@ TEST_F(SidhTests751, EphemeralSecret) {
     auto publicKeyA = std::make_unique<uint8_t []>(lengths->publicKey);
     auto publicKeyB = std::make_unique<uint8_t []>(lengths->publicKey);
 
-    auto sharedA = std::make_unique<uint8_t []>(lengths->sharedSecretA);
-    auto sharedB = std::make_unique<uint8_t []>(lengths->sharedSecretB);
+    auto sharedA = std::make_unique<uint8_t []>(lengths->sharedSecret);
+    auto sharedB = std::make_unique<uint8_t []>(lengths->sharedSecret);
 
     SidhWrapper::random_mod_order_A(SidhWrapper::P751, privateKeyA.get());
     SidhWrapper::random_mod_order_B(SidhWrapper::P751, privateKeyB.get());
@@ -75,5 +74,5 @@ TEST_F(SidhTests751, EphemeralSecret) {
     // Bob computes his shared secret using Alice's public key
     SidhWrapper::EphemeralSecretAgreement_B(SidhWrapper::P751, privateKeyB.get(), publicKeyA.get(), sharedB.get());
 
-    ASSERT_TRUE(memcmp(sharedA.get(), sharedB.get(), lengths->sharedSecretA) == 0);
+    ASSERT_TRUE(memcmp(sharedA.get(), sharedB.get(), lengths->sharedSecret) == 0);
 }

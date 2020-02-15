@@ -32,8 +32,7 @@ SidhWrapper::FieldLengthsPtr SidhWrapper::getFieldLengthsP503() {
     fieldLengths->publicKey = SIDH_PUBLICKEYBYTES;
     fieldLengths->privateKeyA = SIDH_SECRETKEYBYTES_A;
     fieldLengths->privateKeyB = SIDH_SECRETKEYBYTES_B;
-    fieldLengths->sharedSecretA = SIDH_BYTES;
-    fieldLengths->sharedSecretB = SIDH_BYTES;
+    fieldLengths->sharedSecret = SIDH_BYTES;
     return std::move(fieldLengths);
 }
 
