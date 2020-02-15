@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/mainTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/app_name"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/everyThingTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/everything"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/mainTitle" />
+
+    <CheckBox
+        android:id="@+id/everythingSelect"
+        style="@style/Widget.AppCompat.CompoundButton.CheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintBottom_toBottomOf="@+id/everyThingTitle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/everyThingTitle" />
+
+    <TextView
+        android:id="@+id/p434title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="24dp"
+        android:text="@string/p434Title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/everyThingTitle" />
+
+    <CheckBox
+        android:id="@+id/p434select"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        app:layout_constraintBottom_toBottomOf="@+id/p434title"
+        app:layout_constraintStart_toEndOf="@+id/p434title"
+        app:layout_constraintTop_toTopOf="@+id/p434title" />
+
+    <TextView
+        android:id="@+id/p751title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:text="@string/p751Title"
+        app:layout_constraintBottom_toBottomOf="@+id/p434title"
+        app:layout_constraintStart_toEndOf="@+id/p610select"
+        app:layout_constraintTop_toTopOf="@+id/p434title" />
+
+    <CheckBox
+        android:id="@+id/p751select"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        app:layout_constraintBottom_toBottomOf="@+id/p751title"
+        app:layout_constraintStart_toEndOf="@+id/p751title"
+        app:layout_constraintTop_toTopOf="@+id/p751title" />
+
+    <TextView
+        android:id="@+id/p503title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:text="@string/p503Title"
+        app:layout_constraintBottom_toBottomOf="@+id/p434title"
+        app:layout_constraintStart_toEndOf="@+id/p434select"
+        app:layout_constraintTop_toTopOf="@+id/p434title" />
+
+    <CheckBox
+        android:id="@+id/p503select"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        app:layout_constraintBottom_toBottomOf="@+id/p503title"
+        app:layout_constraintStart_toEndOf="@+id/p503title"
+        app:layout_constraintTop_toTopOf="@+id/p503title" />
+
+    <TextView
+        android:id="@+id/p610title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:text="@string/p610Title"
+        app:layout_constraintBottom_toBottomOf="@+id/p434title"
+        app:layout_constraintStart_toEndOf="@+id/p503select"
+        app:layout_constraintTop_toTopOf="@+id/p434title" />
+
+    <CheckBox
+        android:id="@+id/p610select"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        app:layout_constraintBottom_toBottomOf="@+id/p610title"
+        app:layout_constraintStart_toEndOf="@+id/p610title"
+        app:layout_constraintTop_toTopOf="@+id/p610title" />
+
+    <TextView
+        android:id="@+id/testsOnlyTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="24dp"
+        android:text="@string/testsOnly"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/p434title" />
+
+    <TextView
+        android:id="@+id/artihBenchTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/testsBench"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/testsOnlyTitle" />
+
+    <TextView
+        android:id="@+id/ecIsoBenchTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/ecIsoBench"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/artihBenchTitle" />
+
+    <CheckBox
+        android:id="@+id/testsOnlySelect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintBottom_toBottomOf="@+id/testsOnlyTitle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/testsOnlyTitle" />
+
+    <CheckBox
+        android:id="@+id/artihBenchSelect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintBottom_toBottomOf="@+id/artihBenchTitle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/artihBenchTitle" />
+
+    <CheckBox
+        android:id="@+id/ecIsoBenchSelect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintBottom_toBottomOf="@+id/ecIsoBenchTitle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/ecIsoBenchTitle" />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/selectorGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="visible"
+        app:constraint_referenced_ids="p503select,testsOnlyTitle,p503title,artihBenchTitle,p610title,ecIsoBenchTitle,artihBenchSelect,ecIsoBenchSelect,testsOnlySelect,p751title,p434select,p610select,p751select,p434title,diffieHelmanSelect,diffieHelmanTitle" />
+
+    <Button
+        android:id="@+id/runButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/runButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/diffieHelmanTitle" />
+
+    <ScrollView
+        android:id="@+id/scrollText"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/runButton"
+        app:layout_constraintVertical_bias="1.0">
+
+        <TextView
+            android:id="@+id/logData"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:singleLine="false"
+            tools:text="Some log data" />
+    </ScrollView>
+
+    <TextView
+        android:id="@+id/diffieHelmanTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/diffieHellman"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ecIsoBenchTitle" />
+
+    <CheckBox
+        android:id="@+id/diffieHelmanSelect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintBottom_toBottomOf="@+id/diffieHelmanTitle"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/diffieHelmanTitle" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

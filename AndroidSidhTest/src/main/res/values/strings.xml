@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Android SIDH Tests</string>
+    <string name="everything">Run every test and benchmark - takes a long time</string>
+    <string name="select">Select SIDH type, tests and benchmarks</string>
+    <string name="p434Title">P434</string>
+    <string name="p503Title">P503</string>
+    <string name="p610Title">P610</string>
+    <string name="p751Title">P751</string>
+    <string name="testsOnly">Only field arithmetic (fast)</string>
+    <string name="testsBench">Field arithmetic benchmarks (moderate)</string>
+    <string name="ecIsoBench">EC isogeny benchmark (takes long time)</string>
+    <string name="diffieHellman">Diffie-Hellman key exchange</string>
+    <string name="runButton">Run tests</string>
+    <string name="results">Result for %1$s, test: %2$s</string>
+</resources>
