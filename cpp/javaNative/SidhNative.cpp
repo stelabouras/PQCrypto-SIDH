@@ -20,9 +20,11 @@
 #endif
 
 #include <cstdio>
+#include <cstdint>
 
 #include "sidh_tests_SidhNativeTests.h"
 #include "sidh_SidhNative.h"
+#include "../SidhWrapper.h"
 
 /**
  * Define -DPACKAGE_NAME="Java_some_package_name_" to define another package
@@ -62,6 +64,13 @@
 static bool useLog = true;
 static jobject   loggingCallbackObject = nullptr;
 static jmethodID javaLoggingCallback = nullptr;
+
+static jclass    fieldLengthsClass = nullptr;
+static jmethodID fieldLengthsConsID = nullptr;
+static jfieldID  privateKeyAID = nullptr;
+static jfieldID  privateKeyBID = nullptr;
+static jfieldID  publicKeyID = nullptr;
+static jfieldID  sharedSecretID = nullptr;
 
 static JavaVM* javaVM = nullptr;
 
@@ -170,6 +179,59 @@ int dhTestsp751();
 }
 #endif
 
+static void clearGlobalReferences(JNIEnv *env) {
+    if (fieldLengthsClass) {
+        env->DeleteGlobalRef(fieldLengthsClass);
+    }
+    fieldLengthsConsID = nullptr;
+    privateKeyAID = nullptr;
+    privateKeyBID = nullptr;
+    publicKeyID = nullptr;
+    sharedSecretID = nullptr;
+}
+
+static int32_t initializeFieldLengthsInfo(JNIEnv * env) {
+    // Prepare access to the FieldLengths Java class.
+    jclass tempClassRef = env->FindClass( "sidh/SidhNative$FieldLengths" );
+    if (tempClassRef == nullptr) {
+        clearGlobalReferences(env);
+        return -1;
+    }
+    fieldLengthsClass = reinterpret_cast<jclass>(env->NewGlobalRef(tempClassRef));
+
+    privateKeyAID = env->GetFieldID(fieldLengthsClass, "privateKeyA", "J");
+    if (privateKeyAID == nullptr) {
+        clearGlobalReferences(env);
+        return -2;
+    }
+
+    privateKeyBID = env->GetFieldID(fieldLengthsClass, "privateKeyB", "J");
+    if (privateKeyBID == nullptr) {
+        clearGlobalReferences(env);
+        return -3;
+    }
+
+    publicKeyID = env->GetFieldID(fieldLengthsClass, "publicKey", "J");
+    if (privateKeyBID == nullptr) {
+        clearGlobalReferences(env);
+        return -4;
+    }
+
+    sharedSecretID = env->GetFieldID(fieldLengthsClass, "sharedSecret", "J");
+    if (privateKeyBID == nullptr) {
+        clearGlobalReferences(env);
+        return -5;
+    }
+
+    fieldLengthsConsID = env->GetMethodID(fieldLengthsClass, "<init>", "()V");
+    if (fieldLengthsConsID == nullptr) {
+        clearGlobalReferences(env);
+        return -6;
+    }
+    return 1;
+}
+
+
 #ifdef ADD_TESTS
 /*
  * Class:     sidh_tests_SidhNativeTests
@@ -265,9 +327,40 @@ JNI_FUNCTION(enableLoggingCallback)(JNIEnv * env, jobject thiz) {
  */
 JNIEXPORT void JNICALL
 JNI_FUNCTION(disableLoggingCallback)(JNIEnv * env, jclass clazz) {
+    (void)clazz;
+
     if (loggingCallbackObject != nullptr) {
         env->DeleteGlobalRef(loggingCallbackObject);
     }
     loggingCallbackObject = nullptr;
     javaLoggingCallback = nullptr;
+}
+
+/*
+ * Class:     sidh_SidhNative
+ * Method:    getFieldLengths
+ * Signature: (I)Lsidh/SidhNative/FieldLengths;
+ */
+JNIEXPORT jobject JNICALL
+JNI_FUNCTION(getFieldLengths)(JNIEnv * env, jclass clazz, jint sidhType) {
+
+    if (sidhType < SidhWrapper::P434 || sidhType > SidhWrapper::P751Comp) return nullptr;
+
+    if (fieldLengthsClass == nullptr) {
+        auto result = initializeFieldLengthsInfo(env);
+        if (result < 0) {
+            Log("Cannot setup field length class, code: %d", result);
+            return nullptr;
+        }
+    }
+    jobject lengthsDataJava = nullptr;
+    auto lengthPtr = SidhWrapper::getFieldLengths(static_cast<SidhWrapper::SidhType>(sidhType));
+    if (lengthPtr) {
+        lengthsDataJava = env->NewObject(fieldLengthsClass, fieldLengthsConsID);
+        env->SetLongField(lengthsDataJava, privateKeyAID, static_cast<jlong>(lengthPtr->privateKeyA));
+        env->SetLongField(lengthsDataJava, privateKeyBID, static_cast<jlong>(lengthPtr->privateKeyB));
+        env->SetLongField(lengthsDataJava, publicKeyID, static_cast<jlong>(lengthPtr->publicKey));
+        env->SetLongField(lengthsDataJava, sharedSecretID, static_cast<jlong>(lengthPtr->sharedSecret));
+    }
+    return lengthsDataJava;
 }

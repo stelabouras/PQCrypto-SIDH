@@ -1,11 +1,13 @@
 // To create the JNI interface file:
 // - cd to the SidhTestNative.java directory
-// - run 'javac -d . SidhNativeTests.java'
-// - run 'javah sidh.tests.SidhNativeTests'
-//
-// After this you can remove the created 'sidh.tests' directory.
+// - run 'javac -cp annotation-1.1.0.jar -d . SidhNative.java'
+// - run 'javah sidh.SidhNative'
 
 package sidh;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.WorkerThread;
+import androidx.annotation.Nullable;
 
 public abstract class SidhNative {
 
@@ -22,6 +24,19 @@ public abstract class SidhNative {
     public static final int P751Comp = 8;
 
     /**
+     * Class returned by native getFieldLengths function.
+     *
+     */
+    public static class FieldLengths {
+        public long privateKeyA;     //!< length of private key field Alice
+        public long privateKeyB;     //!< length of private key field Bob
+        public long publicKey;       //!< length of public key field
+        public long sharedSecret;    //!< length of shared secret
+
+        public FieldLengths() {}
+    }
+
+    /**
      * Enable / set logging callback in native library.
      *
      * @see public abstract void loggingCallback(int level, byte[] data);
@@ -34,6 +49,12 @@ public abstract class SidhNative {
      * @see public abstract void loggingCallback(int level, byte[] data);
      */
     public static native void disableLoggingCallback();
+
+    /**
+     * Get the field lengths of the selected SIDH algorithm
+     */
+    @Nullable
+    public static native FieldLengths getFieldLengths(int sidhType);
 
     /**
      * Logging callback.

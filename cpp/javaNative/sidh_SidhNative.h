@@ -39,6 +39,14 @@ JNIEXPORT jint JNICALL Java_sidh_SidhNative_enableLoggingCallback
 JNIEXPORT void JNICALL Java_sidh_SidhNative_disableLoggingCallback
   (JNIEnv *, jclass);
 
+/*
+ * Class:     sidh_SidhNative
+ * Method:    getFieldLengths
+ * Signature: (I)Lsidh/SidhNative/FieldLengths;
+ */
+JNIEXPORT jobject JNICALL Java_sidh_SidhNative_getFieldLengths
+  (JNIEnv *, jclass, jint);
+
 #ifdef __cplusplus
 }
 #endif
