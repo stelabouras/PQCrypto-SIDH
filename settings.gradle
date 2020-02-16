@@ -1,1 +1,1 @@
-include ':AndroidSidh', ':AndroidSidhTest'
+include ':AndroidSidhLib', ':AndroidSidhTest'
