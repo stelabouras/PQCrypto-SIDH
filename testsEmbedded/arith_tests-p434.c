@@ -7,13 +7,9 @@
 #include "../src/config.h"
 #include "../src/P434/P434_internal.h"
 #include "../tests/test_extras.h"
+#include <stdio.h>
 
 #include "embeddedTests.h"
-
-#ifndef __ANDROID__
-#include <stdio.h>
-#endif
-
 
 // Benchmark and test parameters  
 #if defined(OPTIMIZED_GENERIC_IMPLEMENTATION) || (TARGET == TARGET_ARM) 
@@ -26,30 +22,13 @@
     #define TEST_LOOPS            100   
 #endif
 
-#ifdef __ANDROID__
-#define PRINTF Log
-#undef print_unit
-#define print_unit
-#ifdef __cplusplus
-extern "C" {
-#endif
-void Log(char const *format, ...);
-#ifdef __cplusplus
-}
-#endif
-
-#else
-#define PRINTF printf
-#endif
-
-
 static bool fp_test()
 { // Tests for the field arithmetic
     bool OK = true;
     int n, passed;
     felm_t a, b, c, d, e, f, ma, mb, mc, md, me, mf;
 
-    PRINTF("\n--------------------------------------------------------------------------------------------------------\n\n");
+    PRINTF("\n---------------------------------------------------------------\n\n");
     PRINTF("Testing field arithmetic over GF(p434): \n\n");
 
     // Field addition over the prime p434
@@ -81,7 +60,7 @@ static bool fp_test()
         fpcorrection434(e);
         if (compare_words(e, b, NWORDS_FIELD)!=0) { passed=0; break; }
     }
-    if (passed==1) PRINTF("  GF(p) addition tests ............................................ PASSED");
+    if (passed==1) PRINTF("  GF(p) addition tests ................................. PASSED");
     else { PRINTF("  GF(p) addition tests... FAILED"); PRINTF("\n"); return false; }
     PRINTF("\n");
 
@@ -114,7 +93,7 @@ static bool fp_test()
         fpcorrection434(e);
         if (compare_words(e, b, NWORDS_FIELD)!=0) { passed=0; break; }
     }
-    if (passed==1) PRINTF("  GF(p) subtraction tests ......................................... PASSED");
+    if (passed==1) PRINTF("  GF(p) subtraction tests .............................. PASSED");
     else { PRINTF("  GF(p) subtraction tests... FAILED"); PRINTF("\n"); return false; }
     PRINTF("\n");
     
@@ -164,7 +143,7 @@ static bool fp_test()
         from_mont(md, d);                
         if (compare_words(b, d, NWORDS_FIELD)!=0) { passed=0; break; } 
     }
-    if (passed==1) PRINTF("  GF(p) multiplication tests ...................................... PASSED");
+    if (passed==1) PRINTF("  GF(p) multiplication tests ........................... PASSED");
     else { PRINTF("  GF(p) multiplication tests... FAILED"); PRINTF("\n"); return false; }
     PRINTF("\n");
 
@@ -213,7 +192,7 @@ static bool fp2_test()
     int n, passed;
     f2elm_t a, b, c, d, e, f, ma, mb, mc, md, me, mf;
 
-    PRINTF("\n--------------------------------------------------------------------------------------------------------\n\n");
+    PRINTF("\n---------------------------------------------------------------\n\n");
     PRINTF("Testing quadratic extension arithmetic over GF(p434^2): \n\n");
 
     // Addition over GF(p434^2)
@@ -240,7 +219,7 @@ static bool fp2_test()
         fp2add434(a, d, e);                                     // e = a+(-a)
         if (compare_words((digit_t*)e, (digit_t*)b, 2*NWORDS_FIELD)!=0) { passed=0; break; }
     }
-    if (passed==1) PRINTF("  GF(p^2) addition tests .......................................... PASSED");
+    if (passed==1) PRINTF("  GF(p^2) addition tests ............................... PASSED");
     else { PRINTF("  GF(p^2) addition tests... FAILED"); PRINTF("\n"); return false; }
     PRINTF("\n");
 
@@ -268,7 +247,7 @@ static bool fp2_test()
         fp2sub434(a, d, e);                                     // e = a+(-a)
         if (compare_words((digit_t*)e, (digit_t*)b, 2*NWORDS_FIELD)!=0) { passed=0; break; }
     }
-    if (passed==1) PRINTF("  GF(p^2) subtraction tests ....................................... PASSED");
+    if (passed==1) PRINTF("  GF(p^2) subtraction tests ............................ PASSED");
     else { PRINTF("  GF(p^2) subtraction tests... FAILED"); PRINTF("\n"); return false; }
     PRINTF("\n");
 
@@ -316,7 +295,7 @@ static bool fp2_test()
         from_fp2mont(md, d);               
         if (compare_words((digit_t*)b, (digit_t*)d, 2*NWORDS_FIELD)!=0) { passed=0; break; } 
     }
-    if (passed==1) PRINTF("  GF(p^2) multiplication tests .................................... PASSED");
+    if (passed==1) PRINTF("  GF(p^2) multiplication tests ......................... PASSED");
     else { PRINTF("  GF(p^2) multiplication tests... FAILED"); PRINTF("\n"); return false; }
     PRINTF("\n");
 
@@ -372,7 +351,7 @@ static bool fp_run()
     felm_t a, b, c;
     dfelm_t aa;
         
-    PRINTF("\n--------------------------------------------------------------------------------------------------------\n\n");
+    PRINTF("\n---------------------------------------------------------------\n\n");
     PRINTF("Benchmarking field arithmetic over GF(p434): \n\n");
         
     fprandom434_test(a); fprandom434_test(b); fprandom434_test(c);
@@ -386,7 +365,7 @@ static bool fp_run()
         cycles2 = cpucycles();
         cycles = cycles+(cycles2-cycles1);
     }
-    PRINTF("  GF(p) addition runs in .......................................... %7lld ", cycles/BENCH_LOOPS); print_unit;
+    PRINTF("  GF(p) addition runs in ............................... %7lld ", cycles/BENCH_LOOPS); print_unit;
     PRINTF("\n");
 
     // GF(p) subtraction using p434
@@ -398,7 +377,7 @@ static bool fp_run()
         cycles2 = cpucycles();
         cycles = cycles+(cycles2-cycles1);
     }
-    PRINTF("  GF(p) subtraction runs in ....................................... %7lld ", cycles/BENCH_LOOPS); print_unit;
+    PRINTF("  GF(p) subtraction runs in ............................ %7lld ", cycles/BENCH_LOOPS); print_unit;
     PRINTF("\n");
 
     // GF(p) multiplication using p434
@@ -410,7 +389,7 @@ static bool fp_run()
         cycles2 = cpucycles();
         cycles = cycles+(cycles2-cycles1);
     }
-    PRINTF("  GF(p) multiplication runs in .................................... %7lld ", cycles/BENCH_LOOPS); print_unit;
+    PRINTF("  GF(p) multiplication runs in ......................... %7lld ", cycles/BENCH_LOOPS); print_unit;
     PRINTF("\n");
 
     // GF(p) reduction using p434
@@ -424,7 +403,7 @@ static bool fp_run()
         cycles2 = cpucycles();
         cycles = cycles+(cycles2-cycles1);
     }
-    PRINTF("  GF(p) reduction runs in ......................................... %7lld ", cycles/BENCH_LOOPS); print_unit;
+    PRINTF("  GF(p) reduction runs in .............................. %7lld ", cycles/BENCH_LOOPS); print_unit;
     PRINTF("\n");
 
     // GF(p) inversion
@@ -436,7 +415,7 @@ static bool fp_run()
         cycles2 = cpucycles();
         cycles = cycles+(cycles2-cycles1);
     }
-    PRINTF("  GF(p) inversion (exponentiation) runs in ........................ %7lld ", cycles/SMALL_BENCH_LOOPS); print_unit;
+    PRINTF("  GF(p) inversion (exponentiation) runs in ............. %7lld ", cycles/SMALL_BENCH_LOOPS); print_unit;
     PRINTF("\n");
     
     return OK;
@@ -450,7 +429,7 @@ static bool fp2_run()
     unsigned long long cycles, cycles1, cycles2;
     f2elm_t a, b, c;
         
-    PRINTF("\n--------------------------------------------------------------------------------------------------------\n\n");
+    PRINTF("\n---------------------------------------------------------------\n\n");
     PRINTF("Benchmarking quadratic extension arithmetic over GF(p434^2): \n\n");
     
     fp2random434_test((digit_t*)a); fp2random434_test((digit_t*)b); fp2random434_test((digit_t*)c);
@@ -464,7 +443,7 @@ static bool fp2_run()
         cycles2 = cpucycles();
         cycles = cycles+(cycles2-cycles1);
     }
-    PRINTF("  GF(p^2) addition runs in ........................................ %7lld ", cycles/BENCH_LOOPS); print_unit;
+    PRINTF("  GF(p^2) addition runs in ............................. %7lld ", cycles/BENCH_LOOPS); print_unit;
     PRINTF("\n");
 
     // GF(p^2) subtraction
@@ -476,7 +455,7 @@ static bool fp2_run()
         cycles2 = cpucycles();
         cycles = cycles+(cycles2-cycles1);
     }
-    PRINTF("  GF(p^2) subtraction runs in ..................................... %7lld ", cycles/BENCH_LOOPS); print_unit;
+    PRINTF("  GF(p^2) subtraction runs in .......................... %7lld ", cycles/BENCH_LOOPS); print_unit;
     PRINTF("\n");
 
     // GF(p^2) multiplication
@@ -488,7 +467,7 @@ static bool fp2_run()
         cycles2 = cpucycles();
         cycles = cycles+(cycles2-cycles1);
     }
-    PRINTF("  GF(p^2) multiplication runs in .................................. %7lld ", cycles/BENCH_LOOPS); print_unit;
+    PRINTF("  GF(p^2) multiplication runs in ....................... %7lld ", cycles/BENCH_LOOPS); print_unit;
     PRINTF("\n");
 
     // GF(p^2) squaring
@@ -500,7 +479,7 @@ static bool fp2_run()
         cycles2 = cpucycles();
         cycles = cycles+(cycles2-cycles1);
     }
-    PRINTF("  GF(p^2) squaring runs in ........................................ %7lld ", cycles/BENCH_LOOPS); print_unit;
+    PRINTF("  GF(p^2) squaring runs in ............................. %7lld ", cycles/BENCH_LOOPS); print_unit;
     PRINTF("\n");
 
     // GF(p^2) inversion
@@ -512,7 +491,7 @@ static bool fp2_run()
         cycles2 = cpucycles();
         cycles = cycles+(cycles2-cycles1);
     }
-    PRINTF("  GF(p^2) inversion (exponentiation) runs in ...................... %7lld ", cycles/SMALL_BENCH_LOOPS); print_unit;
+    PRINTF("  GF(p^2) inversion (exponentiation) runs in ........... %7lld ", cycles/SMALL_BENCH_LOOPS); print_unit;
     PRINTF("\n");
     
     return OK;
@@ -527,7 +506,7 @@ static bool ecisog_run()
     f2elm_t A24, C24, A4, A, C, coeff[5];
     point_proj_t P, Q;
         
-    PRINTF("\n--------------------------------------------------------------------------------------------------------\n\n");
+    PRINTF("\n---------------------------------------------------------------\n\n");
     PRINTF("Benchmarking elliptic curve and isogeny functions: \n\n");
 
     // Point doubling
@@ -541,7 +520,7 @@ static bool ecisog_run()
         cycles2 = cpucycles();
         cycles = cycles+(cycles2-cycles1);
     }
-    PRINTF("  Point doubling runs in .......................................... %7lld ", cycles/BENCH_LOOPS); print_unit;
+    PRINTF("  Point doubling runs in ............................... %7lld ", cycles/BENCH_LOOPS); print_unit;
     PRINTF("\n");
 
     // 4-isogeny of a projective point
@@ -555,7 +534,7 @@ static bool ecisog_run()
         cycles2 = cpucycles();
         cycles = cycles+(cycles2-cycles1);
     }
-    PRINTF("  4-isogeny of projective point runs in ........................... %7lld ", cycles/BENCH_LOOPS); print_unit;
+    PRINTF("  4-isogeny of projective point runs in ................ %7lld ", cycles/BENCH_LOOPS); print_unit;
     PRINTF("\n");
 
     // 4-isogeny evaluation at projective point
@@ -569,7 +548,7 @@ static bool ecisog_run()
         cycles2 = cpucycles();
         cycles = cycles+(cycles2-cycles1);
     }
-    PRINTF("  4-isogeny evaluation at projective point runs in ................ %7lld ", cycles/BENCH_LOOPS); print_unit;
+    PRINTF("  4-isogeny evaluation at projective point runs in ..... %7lld ", cycles/BENCH_LOOPS); print_unit;
     PRINTF("\n");
 
     // Point tripling
@@ -583,7 +562,7 @@ static bool ecisog_run()
         cycles2 = cpucycles();
         cycles = cycles+(cycles2-cycles1);
     }
-    PRINTF("  Point tripling runs in .......................................... %7lld ", cycles/BENCH_LOOPS); print_unit;
+    PRINTF("  Point tripling runs in ............................... %7lld ", cycles/BENCH_LOOPS); print_unit;
     PRINTF("\n");
 
     // 3-isogeny of a projective point
@@ -597,7 +576,7 @@ static bool ecisog_run()
         cycles2 = cpucycles();
         cycles = cycles+(cycles2-cycles1);
     }
-    PRINTF("  3-isogeny of projective point runs in ........................... %7lld ", cycles/BENCH_LOOPS); print_unit;
+    PRINTF("  3-isogeny of projective point runs in ................ %7lld ", cycles/BENCH_LOOPS); print_unit;
     PRINTF("\n");
 
     // 3-isogeny evaluation at projective point
@@ -609,7 +588,7 @@ static bool ecisog_run()
         cycles2 = cpucycles();
         cycles = cycles+(cycles2-cycles1);
     }
-    PRINTF("  3-isogeny evaluation at projective point runs in ................ %7lld ", cycles/BENCH_LOOPS); print_unit;
+    PRINTF("  3-isogeny evaluation at projective point runs in ..... %7lld ", cycles/BENCH_LOOPS); print_unit;
     PRINTF("\n");
     
     return OK;

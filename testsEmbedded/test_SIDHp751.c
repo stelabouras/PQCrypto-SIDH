@@ -9,6 +9,7 @@
 #include "../tests/test_extras.h"
 #include "../src/P751/P751_api.h"
 
+#include "embeddedTests.h"
 
 #define SCHEME_NAME    "SIDHp751"
 

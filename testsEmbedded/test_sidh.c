@@ -14,22 +14,6 @@
     #define TEST_LOOPS        10      
 #endif
 
-#ifdef __ANDROID__
-#define PRINTF Log
-#undef print_unit
-#define print_unit
-#ifdef __cplusplus
-extern "C" {
-#endif
-void Log(char const *format, ...);
-#ifdef __cplusplus
-}
-#endif
-
-#else
-#define PRINTF printf
-#endif
-
 
 static int cryptotest_kex()
 { // Testing key exchange

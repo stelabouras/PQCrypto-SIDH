@@ -18,6 +18,27 @@
 #ifndef PQCRYPTO_SIDH_EMBEDDEDTESTS_H
 #define PQCRYPTO_SIDH_EMBEDDEDTESTS_H
 
+#ifdef __ANDROID__
+#define PRINTF Log
+#ifdef __cplusplus
+extern "C" {
+#endif
+void Log(char const *format, ...);
+#ifdef __cplusplus
+}
+#endif
+
+#else
+#define PRINTF printf
+#endif
+
+#undef print_unit
+#if (TARGET == TARGET_ARM || TARGET == TARGET_ARM64)
+#define print_unit PRINTF("nsec");
+#else
+#define print_unit printf("cycles");
+#endif
+
 /**
  * @brief Bitmask to define which test functions to run.
  */

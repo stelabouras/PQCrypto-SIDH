@@ -8,7 +8,7 @@ import sidh.SidhNative
 import java.io.File
 
 /**
- * SIDH Kotlin unit test, which execute on the development machine (host).
+ * SIDH Kotlin unit tests, which execute on the development machine (host).
  *
  * NOTE: check library load path to make sure the loader finds the correct library.
  *
