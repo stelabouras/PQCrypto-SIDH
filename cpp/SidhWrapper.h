@@ -62,7 +62,7 @@ public:
      * @brief Get lengths of SIDH fields based on SIDH type.
      *
      * @param[in] sidhType SIDH type
-     * @return Unique pointer to @ FieldLengths structure which contains the field lengths
+     * @return Unique pointer to @c FieldLengths structure which contains the field lengths
      */
     static FieldLengthsPtr getFieldLengths(SidhType sidhType);
 

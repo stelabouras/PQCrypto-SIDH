@@ -46,26 +46,22 @@ SidhWrapper::FieldLengthsPtr SidhWrapper::getFieldLengths(SidhType sidhType) {
 void SidhWrapper::random_mod_order_A(SidhType sidhType, unsigned char *randomDigits){
     switch (sidhType) {
         case P434:
-            random_mod_order_A_SIDHp434(randomDigits);
-            break;
+            return random_mod_order_A_SIDHp434(randomDigits);
         case P434Comp:
             break;
 
         case P503:
-            random_mod_order_A_SIDHp503(randomDigits);
-            break;
+            return random_mod_order_A_SIDHp503(randomDigits);
         case P503Comp:
             break;
 
         case P610:
-            random_mod_order_A_SIDHp610(randomDigits);
-            break;
+            return random_mod_order_A_SIDHp610(randomDigits);
         case P610Comp:
             break;
 
         case P751:
-            random_mod_order_A_SIDHp751(randomDigits);
-            break;
+            return random_mod_order_A_SIDHp751(randomDigits);
         case P751Comp:
             break;
 

@@ -252,33 +252,33 @@ JNI_FUNCTION_TESTS(runSidhTests)(JNIEnv *env, jclass clazz, jint sidhType, jint 
             if (testMask & VAR_TEST(DiffieHellman)) {
                 OK = OK && (dhTestsp434() == 0);
             }
-            return OK;
+            return (jboolean)OK;
 
         case VAR(P503):
             OK = OK && arithTests503((RunTestBits)testMask);
             if (testMask & VAR_TEST(DiffieHellman)) {
                 OK = OK && (dhTestsp503() == 0);
             }
-            return OK;
+            return (jboolean)OK;
 
         case VAR(P610):
             OK = OK && arithTests610((RunTestBits)testMask);
             if (testMask & VAR_TEST(DiffieHellman)) {
                 OK = OK && (dhTestsp610() == 0);
             }
-            return OK;
+            return (jboolean)OK;
 
         case VAR(P751):
             OK = OK && arithTests751((RunTestBits)testMask);
             if (testMask & VAR_TEST(DiffieHellman)) {
                 OK = OK && (dhTestsp751() == 0);
             }
-            return OK;
+            return (jboolean)OK;
 
         default:
             break;
     }
-    return false;
+    return (jboolean) false;
 }
 
 #endif
@@ -363,4 +363,173 @@ JNI_FUNCTION(getFieldLengths)(JNIEnv * env, jclass clazz, jint sidhType) {
         env->SetLongField(lengthsDataJava, sharedSecretID, static_cast<jlong>(lengthPtr->sharedSecret));
     }
     return lengthsDataJava;
+}
+
+/*
+ * Class:     sidhjava_SidhNative
+ * Method:    randomModOrderA
+ * Signature: (I[B)Z
+ */
+JNIEXPORT jboolean JNICALL
+JNI_FUNCTION(randomModOrderA)(JNIEnv *env, jclass clazz, jint sidhType, jbyteArray randomOut) {
+
+    (void)clazz;
+
+    auto lengths = SidhWrapper::getFieldLengths(static_cast<SidhWrapper::SidhType>(sidhType));
+    auto dataLen = static_cast<size_t>(env->GetArrayLength(randomOut));
+    if (lengths->privateKeyA != dataLen) {
+        Log("%s: output field length %d does not match required length %d", __func__, dataLen, lengths->privateKeyA);
+        FLUSH;
+        return (jboolean) false;
+    }
+    auto * tmp = (uint8_t *)env->GetByteArrayElements(randomOut, nullptr);
+    SidhWrapper::random_mod_order_A(static_cast<SidhWrapper::SidhType>(sidhType), tmp);
+
+    env->ReleaseByteArrayElements(randomOut, (jbyte *)tmp, 0);
+    return (jboolean) true;
+}
+
+/*
+ * Class:     sidhjava_SidhNative
+ * Method:    randomModOrderB
+ * Signature: (I[B)Z
+ */
+JNIEXPORT jboolean JNICALL
+JNI_FUNCTION(randomModOrderB)(JNIEnv *env, jclass clazz, jint sidhType, jbyteArray randomOut) {
+    (void)clazz;
+
+    auto lengths = SidhWrapper::getFieldLengths(static_cast<SidhWrapper::SidhType>(sidhType));
+    auto dataLen = static_cast<size_t>(env->GetArrayLength(randomOut));
+    if (lengths->privateKeyB != dataLen) {
+        Log("%s: output field length %d does not match required length %d", __func__, dataLen, lengths->privateKeyB);
+        FLUSH;
+        return (jboolean) false;
+    }
+    auto * tmp = (uint8_t *)env->GetByteArrayElements(randomOut, nullptr);
+    SidhWrapper::random_mod_order_A(static_cast<SidhWrapper::SidhType>(sidhType), tmp);
+
+    env->ReleaseByteArrayElements(randomOut, (jbyte *)tmp, 0);
+    return (jboolean)true;
+}
+
+/*
+ * Class:     sidhjava_SidhNative
+ * Method:    ephemeralKeyGenerationA
+ * Signature: (I[B[B)Z
+ */
+JNIEXPORT jboolean JNICALL
+JNI_FUNCTION(ephemeralKeyGenerationA)(JNIEnv *env, jclass clazz, jint sidhType, jbyteArray privateKeyA, jbyteArray publicKeyA) {
+    (void)clazz;
+
+    auto lengths = SidhWrapper::getFieldLengths(static_cast<SidhWrapper::SidhType>(sidhType));
+    auto privateKeyLen = static_cast<size_t>(env->GetArrayLength(privateKeyA));
+    auto publicKeyLen = static_cast<size_t>(env->GetArrayLength(publicKeyA));
+
+    if (lengths->privateKeyA != privateKeyLen || lengths->publicKey != publicKeyLen) {
+        Log("%s: field lengths (%d, %d) do not match required length: (%d, %d)",
+                __func__, privateKeyLen, publicKeyLen, lengths->privateKeyA, lengths->publicKey);
+        FLUSH;
+        return (jboolean) false;
+    }
+    auto * privateTmp = (uint8_t *)env->GetByteArrayElements(privateKeyA, nullptr);
+    auto * publicTmp = (uint8_t *)env->GetByteArrayElements(publicKeyA, nullptr);
+
+    auto result = SidhWrapper::EphemeralKeyGeneration_A(static_cast<SidhWrapper::SidhType>(sidhType), privateTmp, publicTmp);
+
+    env->ReleaseByteArrayElements(privateKeyA, (jbyte *)privateTmp, 0);
+    env->ReleaseByteArrayElements(publicKeyA, (jbyte *)publicTmp, 0);
+    return (jboolean) result;
+}
+
+/*
+ * Class:     sidhjava_SidhNative
+ * Method:    ephemeralKeyGenerationB
+ * Signature: (I[B[B)Z
+ */
+JNIEXPORT jboolean JNICALL
+JNI_FUNCTION(ephemeralKeyGenerationB)(JNIEnv *env, jclass clazz, jint sidhType, jbyteArray privateKeyB, jbyteArray publicKeyB) {
+    (void)clazz;
+
+    auto lengths = SidhWrapper::getFieldLengths(static_cast<SidhWrapper::SidhType>(sidhType));
+    auto privateKeyLen = static_cast<size_t>(env->GetArrayLength(privateKeyB));
+    auto publicKeyLen = static_cast<size_t>(env->GetArrayLength(publicKeyB));
+
+    if (lengths->privateKeyB != privateKeyLen || lengths->publicKey != publicKeyLen) {
+        Log("%s: field lengths (%d, %d) do not match required length: (%d, %d)",
+            __func__, privateKeyLen, publicKeyLen, lengths->privateKeyA, lengths->publicKey);
+        FLUSH;
+        return (jboolean) false;
+    }
+    auto * privateTmp = (uint8_t *)env->GetByteArrayElements(privateKeyB, nullptr);
+    auto * publicTmp = (uint8_t *)env->GetByteArrayElements(publicKeyB, nullptr);
+
+    auto result = SidhWrapper::EphemeralKeyGeneration_B(static_cast<SidhWrapper::SidhType>(sidhType), privateTmp, publicTmp);
+
+    env->ReleaseByteArrayElements(privateKeyB, (jbyte *)privateTmp, 0);
+    env->ReleaseByteArrayElements(publicKeyB, (jbyte *)publicTmp, 0);
+    return (jboolean) result;
+}
+
+/*
+ * Class:     sidhjava_SidhNative
+ * Method:    ephemeralSecretAgreementA
+ * Signature: (I[B[B[B)Z
+ */
+JNIEXPORT jboolean JNICALL
+JNI_FUNCTION(ephemeralSecretAgreementA)(JNIEnv *env, jclass clazz, jint sidhType, jbyteArray privateKeyA, jbyteArray publicKeyB, jbyteArray sharedSecret) {
+    (void)clazz;
+
+    auto lengths = SidhWrapper::getFieldLengths(static_cast<SidhWrapper::SidhType>(sidhType));
+    auto privateKeyLen = static_cast<size_t>(env->GetArrayLength(privateKeyA));
+    auto publicKeyLen = static_cast<size_t>(env->GetArrayLength(publicKeyB));
+    auto sharedSecretLen = static_cast<size_t>(env->GetArrayLength(sharedSecret));
+
+    if (lengths->privateKeyA != privateKeyLen || lengths->publicKey != publicKeyLen || lengths->sharedSecret != sharedSecretLen) {
+        Log("%s: field lengths (%d, %d, %d) do not match required length: (%d, %d, %d)",
+            __func__, privateKeyLen, publicKeyLen, sharedSecretLen, lengths->privateKeyA, lengths->publicKey, lengths->sharedSecret);
+        FLUSH;
+        return (jboolean) false;
+    }
+    auto * privateTmp = (uint8_t *)env->GetByteArrayElements(privateKeyA, nullptr);
+    auto * publicTmp = (uint8_t *)env->GetByteArrayElements(publicKeyB, nullptr);
+    auto * sharedTmp = (uint8_t *)env->GetByteArrayElements(sharedSecret, nullptr);
+
+    auto result = SidhWrapper::EphemeralSecretAgreement_A(static_cast<SidhWrapper::SidhType>(sidhType), privateTmp, publicTmp, sharedTmp);
+
+    env->ReleaseByteArrayElements(privateKeyA, (jbyte *)privateTmp, 0);
+    env->ReleaseByteArrayElements(publicKeyB, (jbyte *)publicTmp, 0);
+    env->ReleaseByteArrayElements(sharedSecret, (jbyte *)sharedTmp, 0);
+    return (jboolean) result;
+}
+
+/*
+ * Class:     sidhjava_SidhNative
+ * Method:    ephemeralSecretAgreementB
+ * Signature: (I[B[B[B)Z
+ */
+JNIEXPORT jboolean JNICALL
+JNI_FUNCTION(ephemeralSecretAgreementB)(JNIEnv *env, jclass clazz, jint sidhType, jbyteArray privateKeyB, jbyteArray publicKeyA, jbyteArray sharedSecret) {
+    (void)clazz;
+
+    auto lengths = SidhWrapper::getFieldLengths(static_cast<SidhWrapper::SidhType>(sidhType));
+    auto privateKeyLen = static_cast<size_t>(env->GetArrayLength(privateKeyB));
+    auto publicKeyLen = static_cast<size_t>(env->GetArrayLength(publicKeyA));
+    auto sharedSecretLen = static_cast<size_t>(env->GetArrayLength(sharedSecret));
+
+    if (lengths->privateKeyB != privateKeyLen || lengths->publicKey != publicKeyLen || lengths->sharedSecret != sharedSecretLen) {
+        Log("%s: field lengths (%d, %d, %d) do not match required length: (%d, %d, %d)",
+            __func__, privateKeyLen, publicKeyLen, sharedSecretLen, lengths->privateKeyA, lengths->publicKey, lengths->sharedSecret);
+        FLUSH;
+        return (jboolean) false;
+    }
+    auto * privateTmp = (uint8_t *)env->GetByteArrayElements(privateKeyB, nullptr);
+    auto * publicTmp = (uint8_t *)env->GetByteArrayElements(publicKeyA, nullptr);
+    auto * sharedTmp = (uint8_t *)env->GetByteArrayElements(sharedSecret, nullptr);
+
+    auto result = SidhWrapper::EphemeralSecretAgreement_B(static_cast<SidhWrapper::SidhType>(sidhType), privateTmp, publicTmp, sharedTmp);
+
+    env->ReleaseByteArrayElements(privateKeyB, (jbyte *)privateTmp, 0);
+    env->ReleaseByteArrayElements(publicKeyA, (jbyte *)publicTmp, 0);
+    env->ReleaseByteArrayElements(sharedSecret, (jbyte *)sharedTmp, 0);
+    return (jboolean) result;
 }

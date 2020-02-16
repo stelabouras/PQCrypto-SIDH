@@ -20,6 +20,7 @@
 
 #ifdef __ANDROID__
 #define PRINTF Log
+#define FLUSH
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -30,6 +31,7 @@ void Log(char const *format, ...);
 
 #else
 #define PRINTF printf
+#define FLUSH fflush(stdout)
 #endif
 
 #undef print_unit
