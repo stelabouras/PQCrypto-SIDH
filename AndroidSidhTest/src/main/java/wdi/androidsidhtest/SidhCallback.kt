@@ -2,7 +2,7 @@ package wdi.androidsidhtest
 
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
-import sidh.SidhNative
+import sidhjava.SidhNative
 import java.util.concurrent.ConcurrentLinkedQueue
 
 object SidhCallback: SidhNative() {

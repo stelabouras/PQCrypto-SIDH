@@ -22,8 +22,8 @@
 #include <cstdio>
 #include <cstdint>
 
-#include "sidh_tests_SidhNativeTests.h"
-#include "sidh_SidhNative.h"
+#include "sidhjava_test_SidhNativeTests.h"
+#include "sidhjava_SidhNative.h"
 #include "../SidhWrapper.h"
 
 /**
@@ -32,19 +32,19 @@
  */
  // Java_sidh_tests_SidhNativeTests_
 #ifndef PACKAGE_NAME_TESTS
-#define PACKAGE_NAME_TESTS Java_sidh_tests_SidhNativeTests_
+#define PACKAGE_NAME_TESTS Java_sidhjava_test_SidhNativeTests_
 #endif
 
 #ifndef PACKAGE_NAME
-#define PACKAGE_NAME Java_sidh_SidhNative_
+#define PACKAGE_NAME Java_sidhjava_SidhNative_
 #endif
 
 #ifndef VAR_PREFIX_TEST
-#define VAR_PREFIX_TEST sidh_tests_SidhNativeTests_
+#define VAR_PREFIX_TEST sidhjava_test_SidhNativeTests_
 #endif
 
 #ifndef VAR_PREFIX
-#define VAR_PREFIX sidh_SidhNative_
+#define VAR_PREFIX sidhjava_SidhNative_
 #endif
 
 #define CONCATx(a,b) a##b
@@ -192,7 +192,7 @@ static void clearGlobalReferences(JNIEnv *env) {
 
 static int32_t initializeFieldLengthsInfo(JNIEnv * env) {
     // Prepare access to the FieldLengths Java class.
-    jclass tempClassRef = env->FindClass( "sidh/SidhNative$FieldLengths" );
+    jclass tempClassRef = env->FindClass( "sidhjava/SidhNative$FieldLengths" );
     if (tempClassRef == nullptr) {
         clearGlobalReferences(env);
         return -1;

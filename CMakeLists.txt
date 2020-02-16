@@ -199,7 +199,9 @@ endif()
 
 if (JNI_FOUND OR ANDROID)
     set(cpp_lib_src ${cpp_lib_src}
-        ${CMAKE_SOURCE_DIR}/cpp/javaNative/sidh_tests_SidhNativeTests.h
+        ${CMAKE_SOURCE_DIR}/cpp/javaNative/sidhjava_test_SidhNativeTests.h
+        ${CMAKE_SOURCE_DIR}/cpp/javaNative/sidhjava_SidhNative_FieldLengths.h
+        ${CMAKE_SOURCE_DIR}/cpp/javaNative/sidhjava_SidhNative.h
         ${CMAKE_SOURCE_DIR}/cpp/javaNative/SidhNative.cpp
         )
 endif ()

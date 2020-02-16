@@ -1,11 +1,11 @@
 // To create the JNI interface file:
-// - cd to the SidhTestNative.java directory
-// - run 'javac -d . SidhNativeTests.java'
-// - run 'javah sidh.tests.SidhNativeTests'
+// - cd cpp/javaNative
+// - javac -cp annotation-1.1.0.jar -d . sidhjava/test/SidhNativeTests.java
+// - javah sidhjava.test.SidhNativeTests
 //
-// After this you can remove the created 'sidh.tests' directory.
+// after this step you may remove the resulting class files in sidhjava/test sub-directory
 
-package sidh.tests;
+package sidhjava.test;
 
 public abstract class SidhNativeTests {
 

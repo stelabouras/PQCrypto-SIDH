@@ -11,8 +11,8 @@ import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import sidh.SidhNative
-import sidh.tests.SidhNativeTests
+import sidhjava.SidhNative
+import sidhjava.test.SidhNativeTests
 
 class MainActivity : AppCompatActivity() {
 

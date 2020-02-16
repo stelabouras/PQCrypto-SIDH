@@ -4,7 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.BeforeClass
 import org.junit.Test
-import sidh.SidhNative
+import sidhjava.SidhNative
 import java.io.File
 
 /**

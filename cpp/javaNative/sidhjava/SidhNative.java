@@ -1,12 +1,12 @@
 // To create the JNI interface file:
-// - cd to the SidhTestNative.java directory
-// - run 'javac -cp annotation-1.1.0.jar -d . SidhNative.java'
-// - run 'javah sidh.SidhNative'
+// - cd cpp/javaNative
+// - javac -cp annotation-1.1.0.jar -d . sidhjava/SidhNative.java
+// - javah sidhjava.SidhNative
+//
+// after this step you may remove the resulting class files in sidhjava sub-directory
 
-package sidh;
+package sidhjava;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.WorkerThread;
 import androidx.annotation.Nullable;
 
 public abstract class SidhNative {
@@ -25,7 +25,6 @@ public abstract class SidhNative {
 
     /**
      * Class returned by native getFieldLengths function.
-     *
      */
     public static class FieldLengths {
         public long privateKeyA;     //!< length of private key field Alice
