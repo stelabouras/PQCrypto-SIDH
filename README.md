@@ -1,3 +1,5 @@
+### Change to branch `develop` to see the new contents of this fork
+
 # SIDH v3.2 (C Edition)
 
 The **SIDH** library is an efficient supersingular isogeny-based cryptography library written in C language.
