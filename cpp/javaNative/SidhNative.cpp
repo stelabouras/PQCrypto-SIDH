@@ -179,6 +179,11 @@ int dhTestsp751();
 }
 #endif
 
+// Don't force a flush on stdout when not running/including testing code
+#ifndef FLUSH
+#define FLUSH
+#endif
+
 static void clearGlobalReferences(JNIEnv *env) {
     if (fieldLengthsClass) {
         env->DeleteGlobalRef(fieldLengthsClass);
