@@ -13,6 +13,8 @@ option(arm64 "Set this to true to build for a ARM (64 bit) architecture." OFF)
 
 option(OPT_LEVEL_GENERIC "Set this to true to use the portable implementation." )
 
+option(BUILD_TESTS "Set to build the unit tests using gtest framework." )
+
 if (ANDROID)
     if (ANDROID_ABI STREQUAL "armeabi-v7a")
         set (arm true)
@@ -27,7 +29,6 @@ if (ANDROID)
     endif()
 endif()
 
-set(G_TESTS true)    # enable google Test framework and unit tests
 
 set(use_mulx true)
 set(use_adx true)
@@ -179,7 +180,9 @@ add_subdirectory(P503)
 add_subdirectory(P610)
 add_subdirectory(P751)
 
-set(sidhLibName sidhCppLib)
+set(sidhLibName sidhCpp)
+set(sidhLibNameStatic sidhCppStatic)
+
 set(cpp_lib_src
         ${CMAKE_SOURCE_DIR}/cpp/SidhWrapper.h
         ${CMAKE_SOURCE_DIR}/cpp/SidhWrapper.cpp
@@ -206,27 +209,26 @@ if (JNI_FOUND OR ANDROID)
         )
 endif ()
 
-if (G_TESTS)
-# Definitions to compile and link tests to the Java Native interface
-add_definitions(-DADD_TESTS)
-set(test_embedded ${CMAKE_SOURCE_DIR}/testsEmbedded)
-set(test_srcs
-        ${test_base}/test_extras.h
-        ${test_base}/test_extras.c
-        ${test_embedded}/arith_tests-p434.c
-        ${test_embedded}/arith_tests-p503.c
-        ${test_embedded}/arith_tests-p610.c
-        ${test_embedded}/arith_tests-p751.c
-        ${test_embedded}/test_SIDHp434.c
-        ${test_embedded}/test_SIDHp503.c
-        ${test_embedded}/test_SIDHp610.c
-        ${test_embedded}/test_SIDHp751.c
-        )
+if (BUILD_TESTS)
+    # Definitions to compile and link test modules to the libraries
+    add_definitions(-DADD_TESTS)
+    set(test_embedded ${CMAKE_SOURCE_DIR}/testsEmbedded)
+    set(test_srcs
+            ${test_base}/test_extras.h
+            ${test_base}/test_extras.c
+            ${test_embedded}/arith_tests-p434.c
+            ${test_embedded}/arith_tests-p503.c
+            ${test_embedded}/arith_tests-p610.c
+            ${test_embedded}/arith_tests-p751.c
+            ${test_embedded}/test_SIDHp434.c
+            ${test_embedded}/test_SIDHp503.c
+            ${test_embedded}/test_SIDHp610.c
+            ${test_embedded}/test_SIDHp751.c)
 
-set(cpp_lib_src ${cpp_lib_src} ${test_srcs})
+    set(cpp_lib_src ${cpp_lib_src} ${test_srcs})
 endif()
 
-if (G_TESTS AND NOT ANDROID)
+if (BUILD_TESTS AND NOT ANDROID)
     # Download and unpack googletest at configure time.
     configure_file(CMakeLists_gtest.txt.in googletest-download/CMakeLists.txt)
     execute_process(COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}" .
@@ -262,6 +264,12 @@ if (G_TESTS AND NOT ANDROID)
     add_subdirectory(unittests)
 
 endif()
+
+# static lib will not include the sidh_nnn static libs object files, however when linking an executable
+# or shared lib to this target cmake adds the sidh_nnn libs to the link line (INTERFACE_LINK_LIBRARIES property)
+add_library(${sidhLibNameStatic} STATIC ${cpp_lib_src})
+target_link_libraries(${sidhLibNameStatic} PUBLIC sidh_434 sidh_503 sidh_610 sidh_751)
+target_include_directories(${sidhLibNameStatic} PRIVATE ${CMAKE_SOURCE_DIR}/src )
 
 add_library(${sidhLibName} SHARED ${cpp_lib_src})
 target_link_libraries(${sidhLibName} PUBLIC sidh_434 sidh_503 sidh_610 sidh_751)
