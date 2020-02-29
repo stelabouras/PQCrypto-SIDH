@@ -17,7 +17,7 @@
 
 #include "SidhWrapper.h"
 
-SidhWrapper::FieldLengthsPtr SidhWrapper::getFieldLengths(SidhType sidhType) {
+SidhWrapper::FieldLengthsPtr SidhWrapper::getFieldLengths(SidhWrapper::SidhType sidhType) {
     switch (sidhType) {
         case P434:
             return getFieldLengthsP434();

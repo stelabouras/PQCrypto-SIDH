@@ -59,6 +59,7 @@ if(x64)
     set(ARCHITECTURE _AMD64_)
 #    set(USE_OPT_LEVEL "_FAST_")    # Disable __FAST_, X64 assembly code is not position independent
     set(USE_OPT_LEVEL "_GENERIC_")
+    MESSAGE(STATUS "Opt level: ${USE_OPT_LEVEL}")
 
 endif()
 
@@ -124,8 +125,8 @@ set (LDFLAGS -lm)
 
 MESSAGE(STATUS "flags: ${CMAKE_C_FLAGS}")
 
-set(src_base ${CMAKE_SOURCE_DIR}/src)
-set(test_base ${CMAKE_SOURCE_DIR}/tests)
+set(src_base ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(test_base ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 set(common_src
         ${src_base}/common/common_funcs.h
@@ -184,12 +185,12 @@ set(sidhLibName sidhCpp)
 set(sidhLibNameStatic sidhCppStatic)
 
 set(cpp_lib_src
-        ${CMAKE_SOURCE_DIR}/cpp/SidhWrapper.h
-        ${CMAKE_SOURCE_DIR}/cpp/SidhWrapper.cpp
-        ${CMAKE_SOURCE_DIR}/cpp/SidhP434Wrapper.cpp
-        ${CMAKE_SOURCE_DIR}/cpp/SidhP503Wrapper.cpp
-        ${CMAKE_SOURCE_DIR}/cpp/SidhP610Wrapper.cpp
-        ${CMAKE_SOURCE_DIR}/cpp/SidhP751Wrapper.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/cpp/SidhWrapper.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/cpp/SidhWrapper.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/cpp/SidhP434Wrapper.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/cpp/SidhP503Wrapper.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/cpp/SidhP610Wrapper.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/cpp/SidhP751Wrapper.cpp
         )
 
 find_package(JNI)
@@ -202,17 +203,17 @@ endif()
 
 if (JNI_FOUND OR ANDROID)
     set(cpp_lib_src ${cpp_lib_src}
-        ${CMAKE_SOURCE_DIR}/cpp/javaNative/sidhjava_test_SidhNativeTests.h
-        ${CMAKE_SOURCE_DIR}/cpp/javaNative/sidhjava_SidhNative_FieldLengths.h
-        ${CMAKE_SOURCE_DIR}/cpp/javaNative/sidhjava_SidhNative.h
-        ${CMAKE_SOURCE_DIR}/cpp/javaNative/SidhNative.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/cpp/javaNative/sidhjava_test_SidhNativeTests.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/cpp/javaNative/sidhjava_SidhNative_FieldLengths.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/cpp/javaNative/sidhjava_SidhNative.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/cpp/javaNative/SidhNative.cpp
         )
 endif ()
 
 if (BUILD_TESTS)
     # Definitions to compile and link test modules to the libraries
     add_definitions(-DADD_TESTS)
-    set(test_embedded ${CMAKE_SOURCE_DIR}/testsEmbedded)
+    set(test_embedded ${CMAKE_CURRENT_SOURCE_DIR}/testsEmbedded)
     set(test_srcs
             ${test_base}/test_extras.h
             ${test_base}/test_extras.c
@@ -269,11 +270,11 @@ endif()
 # or shared lib to this target cmake adds the sidh_nnn libs to the link line (INTERFACE_LINK_LIBRARIES property)
 add_library(${sidhLibNameStatic} STATIC ${cpp_lib_src})
 target_link_libraries(${sidhLibNameStatic} PUBLIC sidh_434 sidh_503 sidh_610 sidh_751)
-target_include_directories(${sidhLibNameStatic} PRIVATE ${CMAKE_SOURCE_DIR}/src )
+target_include_directories(${sidhLibNameStatic} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src )
 
 add_library(${sidhLibName} SHARED ${cpp_lib_src})
 target_link_libraries(${sidhLibName} PUBLIC sidh_434 sidh_503 sidh_610 sidh_751)
-target_include_directories(${sidhLibName} PRIVATE ${CMAKE_SOURCE_DIR}/src )
+target_include_directories(${sidhLibName} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src )
 
 if (ANDROID)
     message(STATUS "Configure for Android Configuration ${ANDROID_ABI}.")
