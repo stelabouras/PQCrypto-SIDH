@@ -33,7 +33,7 @@ SidhWrapper::FieldLengthsPtr SidhWrapper::getFieldLengthsP503() {
     fieldLengths->privateKeyA = SIDH_SECRETKEYBYTES_A;
     fieldLengths->privateKeyB = SIDH_SECRETKEYBYTES_B;
     fieldLengths->sharedSecret = SIDH_BYTES;
-    return std::move(fieldLengths);
+    return fieldLengths;
 }
 
 void SidhWrapper::random_mod_order_A_SIDHp503(unsigned char *random_digits) {
