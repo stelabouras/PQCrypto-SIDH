@@ -4,42 +4,86 @@
 * Abstract: core functions over GF(p) and GF(p^2)
 *********************************************************************************************/
 
+#include <string.h>
+
 
 void clear_words(void* mem, digit_t nwords)
 { // Clear digits from memory. "nwords" indicates the number of digits to be zeroed.
   // This function uses the volatile type qualifier to inform the compiler not to optimize out the memory clearing.
-    unsigned int i;
     volatile digit_t *v = mem; 
 
-    for (i = 0; i < nwords; i++) {
+    for (unsigned int i = 0; i < nwords; i++)
         v[i] = 0;
+}
+
+
+int8_t ct_compare(const uint8_t *a, const uint8_t *b, unsigned int len) 
+{ // Compare two byte arrays in constant time.
+  // Returns 0 if the byte arrays are equal, -1 otherwise.
+    uint8_t r = 0;
+
+    for (unsigned int i = 0; i < len; i++)
+        r |= a[i] ^ b[i];
+
+    return (int8_t)((-(int32_t)r) >> (8*sizeof(uint32_t)-1));
+}
+
+
+void ct_cmov(uint8_t *r, const uint8_t *a, unsigned int len, int8_t selector) 
+{ // Conditional move in constant time.
+  // If selector = -1 then load r with a, else if selector = 0 then keep r.
+
+    for (unsigned int i = 0; i < len; i++)
+        r[i] ^= selector & (a[i] ^ r[i]);
+}
+
+
+__inline static void encode_to_bytes(const digit_t* x, unsigned char* enc, int nbytes)
+{ // Encoding digits to bytes according to endianness
+#ifdef _BIG_ENDIAN_
+    int ndigits = nbytes / sizeof(digit_t);
+    int rem = nbytes % sizeof(digit_t);
+
+    for (int i = 0; i < ndigits; i++)
+        ((digit_t*)enc)[i] = BSWAP_DIGIT(x[i]);
+    if (rem) {
+        digit_t ld = BSWAP_DIGIT(x[ndigits]);
+        memcpy(enc + ndigits*sizeof(digit_t), (unsigned char*)&ld, rem);
     }
+#else    
+    memcpy(enc, (const unsigned char*)x, nbytes);
+#endif
+}
+
+
+__inline static void decode_to_digits(const unsigned char* x, digit_t* dec, int nbytes, int ndigits)
+{ // Decoding bytes to digits according to endianness
+
+    dec[ndigits - 1] = 0;
+    memcpy((unsigned char*)dec, x, nbytes);
+#ifdef _BIG_ENDIAN_
+    for (int i = 0; i < ndigits; i++)
+        dec[i] = BSWAP_DIGIT(dec[i]);
+#endif
 }
 
 
 static void fp2_encode(const f2elm_t x, unsigned char *enc)
 { // Conversion of GF(p^2) element from Montgomery to standard representation, and encoding by removing leading 0 bytes
-    unsigned int i;
     f2elm_t t;
 
     from_fp2mont(x, t);
-    for (i = 0; i < FP2_ENCODED_BYTES / 2; i++) {
-        enc[i] = ((unsigned char*)t)[i];
-        enc[i + FP2_ENCODED_BYTES / 2] = ((unsigned char*)t)[i + MAXBITS_FIELD / 8];
-    }
+    encode_to_bytes(t[0], enc, FP2_ENCODED_BYTES / 2);
+    encode_to_bytes(t[1], enc + FP2_ENCODED_BYTES / 2, FP2_ENCODED_BYTES / 2);
 }
 
 
-static void fp2_decode(const unsigned char *enc, f2elm_t x)
+static void fp2_decode(const unsigned char *x, f2elm_t dec)
 { // Parse byte sequence back into GF(p^2) element, and conversion to Montgomery representation
-    unsigned int i;
 
-    for (i = 0; i < 2*(MAXBITS_FIELD / 8); i++) ((unsigned char *)x)[i] = 0;
-    for (i = 0; i < FP2_ENCODED_BYTES / 2; i++) {
-        ((unsigned char*)x)[i] = enc[i];
-        ((unsigned char*)x)[i + MAXBITS_FIELD / 8] = enc[i + FP2_ENCODED_BYTES / 2];
-    }
-    to_fp2mont(x, x);
+    decode_to_digits(x, dec[0], FP2_ENCODED_BYTES / 2, NWORDS_FIELD);
+    decode_to_digits(x + FP2_ENCODED_BYTES / 2, dec[1], FP2_ENCODED_BYTES / 2, NWORDS_FIELD);
+    to_fp2mont(dec, dec);
 }
 
 
@@ -88,7 +132,6 @@ void copy_words(const digit_t* a, digit_t* c, const unsigned int nwords)
     for (i = 0; i < nwords; i++)                      
         c[i] = a[i];
 }
-
 
 void fpmul_mont(const felm_t ma, const felm_t mb, felm_t mc)
 { // Multiprecision multiplication, c = a*b mod p.
@@ -171,15 +214,48 @@ void fp2correction(f2elm_t a)
 
 __inline static void mp_addfast(const digit_t* a, const digit_t* b, digit_t* c)
 { // Multiprecision addition, c = a+b.    
-#if (OS_TARGET == OS_WIN) || defined(GENERIC_IMPLEMENTATION) || (TARGET == TARGET_ARM) || (TARGET == TARGET_ARM64 && (NBITS_FIELD == 434 || NBITS_FIELD == 610))
+#if (OS_TARGET == OS_WIN) || defined(GENERIC_IMPLEMENTATION) || (TARGET == TARGET_ARM)
 
     mp_add(a, b, c, NWORDS_FIELD);
     
-#elif (OS_TARGET == OS_LINUX)                 
+#elif (OS_TARGET == OS_NIX)                 
     
     mp_add_asm(a, b, c);    
 
 #endif
+}
+
+
+__inline static void mp2_add(const f2elm_t a, const f2elm_t b, f2elm_t c)       
+{ // GF(p^2) addition without correction, c = a+b in GF(p^2). 
+    mp_addfast(a[0], b[0], c[0]);
+    mp_addfast(a[1], b[1], c[1]);
+}
+
+
+__inline static void mp2_sub_p2(const f2elm_t a, const f2elm_t b, f2elm_t c)       
+{ // GF(p^2) subtraction with correction with 2*p, c = a-b+2p in GF(p^2).    
+    mp_sub_p2(a[0], b[0], c[0]);  
+    mp_sub_p2(a[1], b[1], c[1]);
+}
+
+
+__inline static void mp2_sub_p4(const f2elm_t a, const f2elm_t b, f2elm_t c)       
+{ // GF(p^2) subtraction with correction with 4*p, c = a-b+4p in GF(p^2). 
+    mp_sub_p4(a[0], b[0], c[0]);  
+    mp_sub_p4(a[1], b[1], c[1]); 
+}
+
+
+__inline unsigned int mp_add(const digit_t* a, const digit_t* b, digit_t* c, const unsigned int nwords)
+{ // Multiprecision addition, c = a+b, where lng(a) = lng(b) = nwords. Returns the carry bit.
+    unsigned int i, carry = 0;
+        
+    for (i = 0; i < nwords; i++) {                      
+        ADDC(carry, a[i], b[i], carry, c[i]);
+    }
+
+    return carry;
 }
 
 
@@ -190,7 +266,7 @@ void fp2sqr_mont(const f2elm_t a, f2elm_t c)
     felm_t t1, t2, t3;
     
     mp_addfast(a[0], a[1], t1);                      // t1 = a0+a1 
-    fpsub(a[0], a[1], t2);                           // t2 = a0-a1
+    sub_p4(a[0], a[1], t2);                          // t2 = a0-a1
     mp_addfast(a[0], a[0], t3);                      // t3 = 2a0
     fpmul_mont(t1, t2, c[0]);                        // c0 = (a0+a1)(a0-a1)
     fpmul_mont(t3, a[1], c[1]);                      // c1 = 2a0*a1
@@ -210,7 +286,7 @@ __inline unsigned int mp_sub(const digit_t* a, const digit_t* b, digit_t* c, con
 
 __inline static void mp_subaddfast(const digit_t* a, const digit_t* b, digit_t* c)
 { // Multiprecision subtraction followed by addition with p*2^MAXBITS_FIELD, c = a-b+(p*2^MAXBITS_FIELD) if a-b < 0, otherwise c=a-b. 
-#if (OS_TARGET == OS_WIN) || defined(GENERIC_IMPLEMENTATION) || (TARGET == TARGET_ARM) || (TARGET == TARGET_ARM64 && (NBITS_FIELD == 434 || NBITS_FIELD == 610))
+#if (OS_TARGET == OS_WIN) || defined(GENERIC_IMPLEMENTATION) || (TARGET == TARGET_ARM)
     felm_t t1;
 
     digit_t mask = 0 - (digit_t)mp_sub(a, b, c, 2*NWORDS_FIELD);
@@ -218,7 +294,7 @@ __inline static void mp_subaddfast(const digit_t* a, const digit_t* b, digit_t* 
         t1[i] = ((digit_t*)PRIME)[i] & mask;
     mp_addfast((digit_t*)&c[NWORDS_FIELD], t1, (digit_t*)&c[NWORDS_FIELD]);
 
-#elif (OS_TARGET == OS_LINUX)               
+#elif (OS_TARGET == OS_NIX)               
 
     mp_subaddx2_asm(a, b, c);     
 
@@ -228,12 +304,12 @@ __inline static void mp_subaddfast(const digit_t* a, const digit_t* b, digit_t* 
 
 __inline static void mp_dblsubfast(const digit_t* a, const digit_t* b, digit_t* c)
 { // Multiprecision subtraction, c = c-a-b, where lng(a) = lng(b) = 2*NWORDS_FIELD.
-#if (OS_TARGET == OS_WIN) || defined(GENERIC_IMPLEMENTATION) || (TARGET == TARGET_ARM) || (TARGET == TARGET_ARM64 && (NBITS_FIELD == 434 || NBITS_FIELD == 610))
+#if (OS_TARGET == OS_WIN) || defined(GENERIC_IMPLEMENTATION) || (TARGET == TARGET_ARM)
 
     mp_sub(c, a, c, 2*NWORDS_FIELD);
     mp_sub(c, b, c, 2*NWORDS_FIELD);
 
-#elif (OS_TARGET == OS_LINUX)                 
+#elif (OS_TARGET == OS_NIX)                 
 
     mp_dblsubx2_asm(a, b, c);
 
@@ -711,18 +787,6 @@ void from_fp2mont(const f2elm_t ma, f2elm_t c)
 }
 
 
-__inline unsigned int mp_add(const digit_t* a, const digit_t* b, digit_t* c, const unsigned int nwords)
-{ // Multiprecision addition, c = a+b, where lng(a) = lng(b) = nwords. Returns the carry bit.
-    unsigned int i, carry = 0;
-        
-    for (i = 0; i < nwords; i++) {                      
-        ADDC(carry, a[i], b[i], carry, c[i]);
-    }
-
-    return carry;
-}
-
-
 void mp_shiftleft(digit_t* x, unsigned int shift, const unsigned int nwords)
 {
     unsigned int i, j = 0;
@@ -767,8 +831,6 @@ void mp_shiftl1(digit_t* x, const unsigned int nwords)
 
 #ifdef COMPRESS
 
-#include <string.h>
-
 static __inline unsigned int is_felm_zero(const felm_t x)
 { // Is x = 0? return 1 (TRUE) if condition is true, 0 (FALSE) otherwise.
   // SECURITY NOTE: This function does not run in constant-time.
@@ -780,16 +842,26 @@ static __inline unsigned int is_felm_zero(const felm_t x)
     return 1;
 }
 
+static __inline unsigned int is_felm_one(const felm_t x)
+{ // Is x = 0? return 1 (TRUE) if condition is true, 0 (FALSE) otherwise.
+  // SECURITY NOTE: This function does not run in constant-time.
+    unsigned int i;
+
+    for (i = 0; i < NWORDS_FIELD; i++) {
+        if (x[i] != 0) return 0;
+    }
+    return 1;
+}
 
 void mul3(unsigned char *a) 
 { // Computes a = 3*a
   // The input is assumed to be OBOB_BITS-2 bits long and stored in SECRETKEY_B_BYTES
     digit_t temp1[NWORDS_ORDER] = {0}, temp2[NWORDS_ORDER] = {0};
         
-    memcpy((unsigned char*)temp1, a, SECRETKEY_B_BYTES);
+    decode_to_digits(a, temp1, SECRETKEY_B_BYTES, NWORDS_ORDER);
     mp_add(temp1, temp1, temp2, NWORDS_ORDER);               // temp2 = 2*a
     mp_add(temp1, temp2, temp1, NWORDS_ORDER);               // temp1 = 3*a
-    memcpy(a, (unsigned char*)temp1, SECRETKEY_B_BYTES);
+    encode_to_bytes(temp1, a, SECRETKEY_B_BYTES);
     
     clear_words((void*)temp1, NWORDS_ORDER);
     clear_words((void*)temp2, NWORDS_ORDER);
@@ -858,6 +930,10 @@ void cube_Fp2_cycl(f2elm_t a, const felm_t one)
 }
 
 
+
+
+
+
 static bool is_zero(digit_t* a, unsigned int nwords)
 { // Check if multiprecision element is zero.
   // SECURITY NOTE: This function does not run in constant time.
@@ -893,7 +969,7 @@ unsigned char is_sqr_fp2(const f2elm_t a, felm_t s)
     fpsqr_mont(s,temp);          // s = z^((p+1)/4)
     fpcorrection(temp);
     fpcorrection(z);
-    if (memcmp((unsigned char*)temp, (unsigned char*)z, NBITS_TO_NBYTES(NBITS_FIELD)) != 0)  // s^2 !=? z
+    if (memcmp(temp, z, NBITS_TO_NBYTES(NBITS_FIELD)) != 0)  // s^2 !=? z
         return 0;
     
     return 1;
@@ -952,8 +1028,25 @@ static __inline void power2_setup(digit_t* x, int mark, const unsigned int nword
         }
         mark -= RADIX;
         i += 1;
-    }
+    }    
+}
+
+
+int8_t cmp_f2elm(const f2elm_t x, const f2elm_t y)
+{ // Comparison of two GF(p^2) elements in constant time. 
+  // Is x != y? return -1 if condition is true, 0 otherwise.
+    f2elm_t a, b;      
+    digit_t r = 0;
     
+    fp2copy(x, a);
+    fp2copy(y, b);
+    fp2correction(a);
+    fp2correction(b);
+    
+    for (int i = NWORDS_FIELD-1; i >= 0; i--)
+        r |= (a[0][i] ^ b[0][i]) | (a[1][i] ^ b[1][i]);
+
+    return (int8_t)(((0-(digit_t)(r & 1)) | (0-(digit_t)(r >> 1))) >> (8*sizeof(digit_t)-1));
 }
 
 
@@ -966,9 +1059,23 @@ static __inline unsigned int is_felm_even(const felm_t x)
 static __inline unsigned int is_felm_lt(const felm_t x, const felm_t y)
 { // Is x < y? return 1 (TRUE) if condition is true, 0 (FALSE) otherwise.
   // SECURITY NOTE: This function does not run in constant-time.
-    int i;
 
-    for (i = NWORDS_FIELD-1; i >= 0; i--) {
+    for (int i = NWORDS_FIELD-1; i >= 0; i--) {
+        if (x[i] < y[i]) { 
+            return true;
+        } else if (x[i] > y[i]) {
+            return false;
+        }
+    }
+    return false;
+}
+
+
+static __inline unsigned int is_orderelm_lt(const digit_t *x, const digit_t *y)
+{ // Is x < y? return 1 (TRUE) if condition is true, 0 (FALSE) otherwise.
+  // SECURITY NOTE: This function does not run in constant-time.
+
+    for (int i = NWORDS_ORDER-1; i >= 0; i--) {
         if (x[i] < y[i]) { 
             return true;
         } else if (x[i] > y[i]) {
@@ -1045,8 +1152,11 @@ void fpinv_mont_bingcd(felm_t a)
     felm_t x, t;
     unsigned int k;
 
+    if (is_felm_zero(a) == true)
+        return;
+
     fpinv_mont_bingcd_partial(a, x, &k);
-    if (k < MAXBITS_FIELD) { 
+    if (k <= MAXBITS_FIELD) { 
         fpmul_mont(x, (digit_t*)&Montgomery_R2, x);
         k += MAXBITS_FIELD;
     }
@@ -1087,7 +1197,7 @@ void mont_n_way_inv(const f2elm_t* vec, const int n, f2elm_t* out)
     fp2inv_mont_bingcd(t1);
     
     for (i = n-1; i >= 1; i--) {
-        fp2mul_mont(out[i-1], t1, out[i]);// out[i] = t1*out[i-1]
+        fp2mul_mont(out[i-1], t1, out[i]);        // out[i] = t1*out[i-1]
         fp2mul_mont(t1, vec[i], t1);              // t1 = t1*vec[i]
     }
     fp2copy(t1, out[0]);                          // out[0] = t1
@@ -1277,12 +1387,17 @@ static __inline void Montgomery_inversion_mod_order_bingcd_partial(const digit_t
 
 
 void Montgomery_inversion_mod_order_bingcd(const digit_t* a, digit_t* c, const digit_t* order, const digit_t* Montgomery_rprime, const digit_t* Montgomery_Rprime)
-{// Montgomery inversion modulo order, a = a^(-1)*R mod order.
-    digit_t x[NWORDS_ORDER], t[NWORDS_ORDER];
+{// Montgomery inversion modulo order, c = a^(-1)*R mod order.
+    digit_t x[NWORDS_ORDER], t[NWORDS_ORDER] = {0};
     unsigned int k;
 
+    if (is_zero((digit_t*)a, NWORDS_ORDER) == true) {
+        copy_words(t, c, NWORDS_ORDER);
+        return;
+    }
+
     Montgomery_inversion_mod_order_bingcd_partial(a, x, &k, order);
-    if (k < NBITS_ORDER) {
+    if (k <= NBITS_ORDER) {
         Montgomery_multiply_mod_order(x, Montgomery_Rprime, x, order, Montgomery_rprime);
         k += NBITS_ORDER;
     }
@@ -1294,8 +1409,9 @@ void Montgomery_inversion_mod_order_bingcd(const digit_t* a, digit_t* c, const d
 
 
 void inv_mod_orderA(const digit_t* a, digit_t* c)
-{ // Inversion modulo an even integer of the form 2^m.
+{ // Inversion of an odd integer modulo an even integer of the form 2^m.
   // Algorithm 3: Explicit Quadratic Modular inverse modulo 2^m from Dumas'12: http://arxiv.org/pdf/1209.6626.pdf
+  // If the input is invalid (even), the function outputs c = a.
     unsigned int i, f, s = 0;
     digit_t am1[NWORDS_ORDER] = {0};
     digit_t tmp1[NWORDS_ORDER] = {0};
@@ -1303,18 +1419,16 @@ void inv_mod_orderA(const digit_t* a, digit_t* c)
     digit_t one[NWORDS_ORDER] = {0};
     digit_t order[NWORDS_ORDER] = {0};
     digit_t mask = (digit_t)((uint64_t)(-1) >> (NBITS_ORDER - OALICE_BITS));
-    bool equal = true;
 
     order[NWORDS_ORDER-1] = (digit_t)((uint64_t)1 << (64 - (NBITS_ORDER - OALICE_BITS)));  // Load most significant digit of Alice's order
     one[0] = 1;
+        
+    mp_sub(a, one, am1, NWORDS_ORDER);                   // am1 = a-1
 
-    for (i = 0; i < NWORDS_ORDER; i++) {
-        if (a[i] != one[0]) equal = false;
-    }
-    if (equal) {
+    if (((a[0] & (digit_t)1) == 0) || (is_zero(am1, NWORDS_ORDER) == true)) {  // Check if the input is even or one 
         copy_words(a, c, NWORDS_ORDER);
-    } else {
-        mp_sub(a, one, am1, NWORDS_ORDER);               // am1 = a-1
+        c[NWORDS_ORDER-1] &= mask;                       // mod 2^m
+    } else { 
         mp_sub(order, am1, c, NWORDS_ORDER);
         mp_add(c, one, c, NWORDS_ORDER);                 // c = 2^m - a + 2
 
@@ -1328,12 +1442,12 @@ void inv_mod_orderA(const digit_t* a, digit_t* c)
         for (i = 1; i < f; i <<= 1) {
             multiply(am1, am1, tmp2, NWORDS_ORDER);            // tmp2 = am1^2  
             copy_words(tmp2, am1, NWORDS_ORDER);
-            am1[NWORDS_ORDER-1] &= mask;                       // am1 = tmp2 mod 2^e
+            am1[NWORDS_ORDER-1] &= mask;                       // am1 = tmp2 mod 2^m
             mp_add(am1, one, tmp1, NWORDS_ORDER);              // tmp1 = am1 + 1
-            tmp1[NWORDS_ORDER-1] &= mask;                      // mod 2^e
+            tmp1[NWORDS_ORDER-1] &= mask;                      // mod 2^m
             multiply(c, tmp1, tmp2, NWORDS_ORDER);             // c = c*tmp1
             copy_words(tmp2, c, NWORDS_ORDER);
-            c[NWORDS_ORDER-1] &= mask;                         // mod 2^e
+            c[NWORDS_ORDER-1] &= mask;                         // mod 2^m
         }
     }
 }
@@ -1367,6 +1481,116 @@ void recover_os(const f2elm_t X1, const f2elm_t Z1, const f2elm_t X2, const f2el
     fp2mul_mont(t1, X2, t1);       // t1 = (X1-x*Z1)^2*X2
     fp2mul_mont(t0, Z2, t0);       // t0 = Z2*[(X1+x*Z1+2*A*Z1)*(X1*x+Z1)-2*A*Z1^2]
     fp2sub(t0, t1, Y3);            // Y3 = Z2*[(X1+x*Z1+2*A*Z1)*(X1*x+Z1)-2*A*Z1^2] - (X1-x*Z1)^2*X2
+}
+// Closing COMPRESSED
+#endif
+
+
+#ifdef ELL2_TORUS
+
+int mod(int a, unsigned int b)
+{
+    unsigned int r; 
+    if (b == 0) return 0; // avoid invalid operation
+    r = a % b;
+    while (r < 0) r += b;
+    return r;
+}
+
+
+int highest_2t(const int n) 
+{ // Find largest power 2^t dividing n
+    return (n & (~(n - 1))); 
+} 
+
+
+int highest_t(const int n) 
+{ // Find largest t s.t. 2^t divides n and 2^(t+1) does not
+    int t = 0, power2t = highest_2t(n); 
+
+    while (power2t > 1) {
+        power2t >>= 1;
+        t++;
+    }
+    return t;
+}
+
+
+void toproj(const f2elm_t a, felm_t *b) {
+    fpadd(a[0], (digit_t*)&Montgomery_one, b[0]);
+    fpcopy(a[1], b[1]);
+}
+
+
+void fromproj(const felm_t *a, felm_t *b) {
+    felm_t x, xx, y, yy, tmp1, tmp2;
+    
+    fpcopy(a[0],x);
+    fpcopy(a[1],y);
+    fpsqr_mont(x,xx);
+    fpsqr_mont(y,yy);
+    fpsub(xx,yy,tmp1);
+    fpadd(xx,yy,tmp2);
+    fpinv_mont(tmp2);
+    fpmul_mont(tmp1,tmp2,b[0]);
+    fpmul_mont(x,y,tmp1);
+    fpadd(tmp1,tmp1,tmp1);
+    fpmul_mont(tmp1,tmp2,b[1]);
+    fpcorrection(b[0]);
+    fpcorrection(b[1]);    
+}
+
+
+void inv_Fp2_cycl_proj(felm_t *proja) 
+{ // Given an Fp2 element a in the cyclotomic subgroup, compute a^-1
+    if (!is_felm_zero(proja[1])) {
+        fpneg(proja[0]);
+        fpcorrection(proja[0]);
+    }
+} 
+
+
+int reverse_bits(int t, unsigned int nbits) 
+{ // Given t = b_{n-1}2^(n-1) + ... + b_{1}2 + b_{0}, return b_{0}2^(n-1) + ... + b{n-2}2 + b_{n-1}
+    int x = t, r = 0, bits=0;
+    while (x > 0) {        
+        r = (r << 1) + (x%2);
+        x >>= 1;
+        bits++;
+    }
+    while ((unsigned int)bits < nbits) {
+        r <<= 1;
+        bits++;
+    }
+    return r;
+}
+
+
+void sqr_Fp2_cycl_proj(felm_t *proja)
+{ // Cyclotomic squaring on projective elements of norm 1, using a^(p+1) = 1.
+    felm_t t0, t1, xy;
+
+    fpadd(proja[0],proja[1],t0);
+    fpsub(proja[0],proja[1],t1);    
+    fpmul_mont(proja[0],proja[1],xy);
+    fpmul_mont(t0,t1,proja[0]);    
+    fpadd(xy,xy,proja[1]);
+}
+
+
+void mulmixed_montproj(const felm_t *proja, const felm_t alpha, felm_t *projc)
+{   // [x,y] * [alpha, 1]
+    felm_t t0, x, y;
+
+    fpcopy(proja[0], x);
+    fpcopy(proja[1], y);
+    fpmul_mont(x,alpha,t0);
+    fpsub(t0, y, projc[0]); // x*alpha - y    
+    fpmul_mont(y, alpha, t0);
+    fpadd(x, t0, projc[1]); // x + y*alpha
+
+    fpcorrection(projc[0]);
+    fpcorrection(projc[1]);
 }
 
 #endif
