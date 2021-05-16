@@ -7,6 +7,7 @@
 #include "P503_compressed_api.h" 
 #define COMPRESS
 #include "P503_internal.h"
+#include "../internal.h"
 
 
 // Encoding of field elements, elements over Z_order, elements over GF(p^2) and elliptic curve points:
@@ -21,12 +22,19 @@
 // Curve isogeny system "SIDHp503". Base curve: Montgomery curve By^2 = Cx^3 + Ax^2 + Cx defined over GF(p503^2), where A=6, B=1, C=1 and p503 = 2^250*3^159-1
 //
 
-const uint64_t p503[NWORDS64_FIELD]              = { 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xABFFFFFFFFFFFFFF, 
-                                                     0x13085BDA2211E7A0, 0x1B9BF6C87B7E7DAF, 0x6045C6BDDA77A4D0, 0x004066F541811E1E };
-const uint64_t p503p1[NWORDS64_FIELD]            = { 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0xAC00000000000000,
+const uint64_t p503[NWORDS64_FIELD]              = { 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xABFFFFFFFFFFFFFF,
                                                      0x13085BDA2211E7A0, 0x1B9BF6C87B7E7DAF, 0x6045C6BDDA77A4D0, 0x004066F541811E1E };
 const uint64_t p503x2[NWORDS64_FIELD]            = { 0xFFFFFFFFFFFFFFFE, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0x57FFFFFFFFFFFFFF,
                                                      0x2610B7B44423CF41, 0x3737ED90F6FCFB5E, 0xC08B8D7BB4EF49A0, 0x0080CDEA83023C3C }; 
+const uint64_t p503x4[NWORDS64_FIELD]            = { 0xFFFFFFFFFFFFFFFC, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xAFFFFFFFFFFFFFFF,
+                                                     0x4C216F6888479E82, 0x6E6FDB21EDF9F6BC, 0x81171AF769DE9340, 0x01019BD506047879 };
+const uint64_t p503p1[NWORDS64_FIELD]            = { 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0xAC00000000000000,
+                                                     0x13085BDA2211E7A0, 0x1B9BF6C87B7E7DAF, 0x6045C6BDDA77A4D0, 0x004066F541811E1E };
+const uint64_t p503p1x64[NWORDS64_FIELD/2]       = { 0xC216F6888479E82B, 0xE6FDB21EDF9F6BC4, 0x1171AF769DE93406, 0x1019BD5060478798 };
+const uint64_t p503x16p[2*NWORDS64_FIELD]        = { 0x0000000000000010, 0x0000000000000000, 0x0000000000000000, 0x8000000000000000,
+                                                     0x9EF484BBBDC30BEA, 0x8C8126F090304A1D, 0xF7472844B10B65FC, 0x30F32157CFDC3C33,
+                                                     0x1463AB4329A333F7, 0xDFC933977C47D3A4, 0x338A3767F6F2520B, 0x4F8CB7565CCC13FA,
+                                                     0xDE43B73AACD2189B, 0xBCF845CAC5405FBD, 0x516D02A09E684B7A, 0x0001033A4091BB86 };
 // Order of Alice's subgroup
 static const uint64_t Alice_order[NWORDS64_ORDER]       = { 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0400000000000000 };
 // Order of Bob's subgroup
@@ -164,17 +172,26 @@ static const unsigned int strat_Bob[MAX_Bob - 1] = {
 1, 1, 4, 2, 1, 1, 2, 1, 1, 8, 4, 2, 1, 1, 2, 1, 1, 4, 2, 1, 1, 2, 1, 1 };
 
 // Fixed traversal strategies for Pohlig-Hellman discrete logs
-
-static const unsigned int ph2_path[PLEN_2] = { // w_2 = 5
-0, 0, 1, 2, 3, 4, 4, 5, 5, 6, 7, 7, 8, 9, 10, 10, 11, 12, 13, 13, 14, 14, 15, 16,
-17, 18, 18, 18, 19, 20, 20, 21, 22, 23, 24, 25, 25, 25, 25, 26, 27, 28, 29, 29,
-30, 31, 32, 33, 34, 35, 35
+const unsigned int ph2_path[PLEN_2] = {
+#ifdef COMPRESSED_TABLES
+    #ifdef ELL2_TORUS
+        #if W_2 == 5
+            0, 0, 1, 2, 3, 4, 4, 5, 5, 6, 7, 7, 8, 9, 10, 10, 11, 12, 13, 13, 14, 14, 15, 16, 17, 18, 18, 18, 19, 20, 20, 21, 22, 23, 24, 25, 25, 25, 25, 26, 27, 28, 29, 29, 30, 31, 32, 33, 34, 35, 35
+        #endif
+    #endif
+#endif
 };
 
-static const unsigned int ph3_path[PLEN_3] = { // w_3 = 6
-0, 0, 1, 2, 3, 4, 5, 6, 6, 7, 7, 8, 9, 9, 10, 11, 12, 12, 13, 14, 15, 16, 16, 17,
-18, 19, 20, 21
+const unsigned int ph3_path[PLEN_3] = {
+#ifdef COMPRESSED_TABLES
+    #ifdef ELL3_FULL_SIGNED
+        #if W_3 == 3
+            0, 0, 1, 2, 3, 3, 4, 4, 5, 6, 6, 7, 8, 9, 9, 9, 10, 11, 12, 13, 13, 13, 13, 14, 15, 16, 17, 18, 19, 19, 19, 19, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 28, 28, 28, 28, 28, 28, 29, 30, 31, 32, 33, 34
+        #endif
+    #endif
+#endif
 };
+
 
 // Entangled bases related static tables and parameters
 
@@ -305,7 +322,7 @@ static const uint64_t table_v_qnr[TABLE_V_LEN][NWORDS64_FIELD] =
 {0x22BCBF7871766C3A,0x9395C19D8E87CC4C,0xB92EF7084D0FEBD8,0x8A60E143C87DB915,0x3FDCB6ED258F6167,0xFB9943E3BF11D380,0xE116C209F87D2108,0xE76DDE2391409},
 {0xC8A69E75B7B72831,0x300BCE8A5E86484D,0x34F0183CB8FBECCB,0x590030B5DC767075,0x2D8B65503007FE01,0x8F397E3E796F3B98,0xC77FB29679EAF434,0x13554730291BD2} };
 
-static const uint64_t v_3_torsion[20][2 * NWORDS64_FIELD] =
+static const uint64_t v_3_torsion[TABLE_V3_LEN][2 * NWORDS64_FIELD] =
 { {0x9999999999999ACA,0x9999999999999999,0x9999999999999999,0xE199999999999999,0xF80F9506B04F6159,0x922628D05B98276C,0x536E7BDA3A893A25,0x38C6C682DEFCAE,0xCCCCCCCCCCCCCC67,0xCCCCCCCCCCCCCCCC,0xCCCCCCCCCCCCCCCC,0x98CCCCCCCCCCCCCC,0x5E52ECF125EB8217,0x2DD1EF52B54CC76B,0xAEF26E4BDFFA238E,0x28ABA3F8B607A},
 {0xB61A6449E59BB678,0xE59BB61A6449E59B,0x6449E59BB61A6449,0x161A6449E59BB61A,0xB0A7A696AD14F403,0x5908519429BF6752,0xF8F5C2FDB95D626B,0x3415A91EB9B01B,0x59BB61A6449E5991,0x449E59BB61A6449E,0x61A6449E59BB61A6,0xEDBB61A6449E59BB,0xDCBBFD66B1210ED0,0xD1759BAF69F0DE7F,0x151E605BC94FFF1C,0x1AF11E41BC9044},
 {0x865EFC865EFC868A,0x5EFC865EFC865EFC,0xFC865EFC865EFC86,0xCE5EFC865EFC865E,0x4CC228DC36501857,0x73987670F8421161,0xE0DF934DDA9372B7,0x2EFD8AF527F647,0x548FA3548FA3547A,0x8FA3548FA3548FA3,0xA3548FA3548FA354,0x5C8FA3548FA3548F,0x370CE767DB69F0A1,0x148A42FD9FA8E75E,0x95D3497A1836567A,0x3B176D3CEE7B7D},
@@ -344,6 +361,9 @@ static const uint64_t v_3_torsion[20][2 * NWORDS64_FIELD] =
 #define fp2zero                       fp2zero503
 #define fp2add                        fp2add503
 #define fp2sub                        fp2sub503
+#define mp_sub_p2                     mp_sub503_p2
+#define mp_sub_p4                     mp_sub503_p4
+#define sub_p4                        mp_sub_p4
 #define fp2neg                        fp2neg503
 #define fp2div2                       fp2div2_503
 #define fp2correction                 fp2correction503

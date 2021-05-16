@@ -7,6 +7,7 @@
 #include "P610_compressed_api.h"
 #define COMPRESS
 #include "P610_internal.h"
+#include "../internal.h"
 
 
 // Encoding of field elements, elements over Z_order, elements over GF(p^2) and elliptic curve points:
@@ -21,12 +22,18 @@
 // Curve isogeny system "SIDHp610". Base curve: Montgomery curve By^2 = Cx^3 + Ax^2 + Cx defined over GF(p610^2), where A=6, B=1, C=1 and p610 = 2^305*3^192-1
 //
          
-const uint64_t p610[NWORDS64_FIELD]              = { 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0x6E01FFFFFFFFFFFF, 
-                                                     0xB1784DE8AA5AB02E, 0x9AE7BF45048FF9AB, 0xB255B2FA10C4252A, 0x819010C251E7D88C, 0x000000027BF6A768 };
-const uint64_t p610p1[NWORDS64_FIELD]            = { 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x6E02000000000000,
+const uint64_t p610[NWORDS64_FIELD]              = { 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0x6E01FFFFFFFFFFFF,
                                                      0xB1784DE8AA5AB02E, 0x9AE7BF45048FF9AB, 0xB255B2FA10C4252A, 0x819010C251E7D88C, 0x000000027BF6A768 };
 const uint64_t p610x2[NWORDS64_FIELD]            = { 0xFFFFFFFFFFFFFFFE, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xDC03FFFFFFFFFFFF,
-                                                     0x62F09BD154B5605C, 0x35CF7E8A091FF357, 0x64AB65F421884A55, 0x03202184A3CFB119, 0x00000004F7ED4ED1 }; 
+                                                     0x62F09BD154B5605C, 0x35CF7E8A091FF357, 0x64AB65F421884A55, 0x03202184A3CFB119, 0x00000004F7ED4ED1 };
+const uint64_t p610x4[NWORDS64_FIELD]            = { 0xFFFFFFFFFFFFFFFC, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xB807FFFFFFFFFFFF,
+                                                     0xC5E137A2A96AC0B9, 0x6B9EFD14123FE6AE, 0xC956CBE8431094AA, 0x06404309479F6232, 0x00000009EFDA9DA2 };
+const uint64_t p610p1[NWORDS64_FIELD]            = { 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x6E02000000000000,
+                                                     0xB1784DE8AA5AB02E, 0x9AE7BF45048FF9AB, 0xB255B2FA10C4252A, 0x819010C251E7D88C, 0x000000027BF6A768 };
+const uint64_t p610x16p[2*NWORDS64_FIELD]        = { 0x0000000000000010, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x3FC0000000000000,
+                                                     0xD0F642EAB4A9FA32, 0xA308175F6E00CA89, 0xB549A0BDE77B5AAC, 0xCDFDE7B5C304EE69, 0x7FDB7FF0812B12EF,
+                                                     0xE09BA529B9FE1167, 0xD249C196DAB8CD7F, 0xD4E22754A3F20928, 0x97825638B19A7CCE, 0x05E04550FC4CCE0D,
+                                                     0x8FB5DA1152CDE50C, 0xF9649BA3EA408644, 0x4473C93E6441063D, 0xBE190269D1337B7B, 0x0000000000000062 };
 // Order of Alice's subgroup
 static const uint64_t Alice_order[NWORDS64_ORDER]       = { 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0002000000000000 };
 // Order of Bob's subgroup
@@ -148,36 +155,33 @@ static const uint64_t threeinv[NWORDS64_FIELD] = {
 0x5555555577AEEDA2,0x5555555555555555,0x5555555555555555,0x5555555555555555,0xDE11555555555555,0xC488963F0D7B28BF,0xAE18B2BDE10BF15E,0x463CB6074578F0A0,0x5BCDAB7A2CB98FBF,0x5831A321};
 
 // Fixed parameters for isogeny tree computation
-static const unsigned int strat_Alice[MAX_Alice-1] = {
-67, 37, 21, 12, 7, 4, 2, 1, 1, 2, 1, 1, 3, 2, 1, 1, 1, 1, 5, 3, 2, 1, 1, 1, 1, 
-2, 1, 1, 1, 9, 5, 3, 2, 1, 1, 1, 1, 2, 1, 1, 1, 4, 2, 1, 1, 1, 2, 1, 1, 16, 9, 
-5, 3, 2, 1, 1, 1, 1, 2, 1, 1, 1, 4, 2, 1, 1, 1, 2, 1, 1, 8, 4, 2, 1, 1, 2, 1, 
-1, 4, 2, 1, 1, 2, 1, 1, 33, 16, 8, 5, 2, 1, 1, 1, 2, 1, 1, 1, 4, 2, 1, 1, 2, 1, 
-1, 8, 4, 2, 1, 1, 2, 1, 1, 4, 2, 1, 1, 2, 1, 1, 16, 8, 4, 2, 1, 1, 1, 2, 1, 1, 
-4, 2, 1, 1, 2, 1, 1, 8, 4, 2, 1, 1, 2, 1, 1, 4, 2, 1, 1, 2, 1, 1 };
+static const unsigned int strat_Alice[MAX_Alice-1] = { 67, 37, 21, 12, 7, 4, 2, 1, 1, 2, 1, 1, 3, 2, 1, 1, 1, 1, 5, 3, 2, 1, 1, 1, 1, 2, 1, 1, 1, 9, 5, 3, 2, 1, 1, 1, 1, 2, 1, 1, 1, 4, 2, 1, 1, 1, 2, 1, 1, 16, 9, 5, 3, 2, 1, 1, 1, 1, 2, 1, 1, 1, 4, 2, 1, 1, 1, 2, 1, 1, 8, 4, 2, 1, 1, 2, 1, 1, 4, 2, 1, 1, 2, 1, 1, 33, 16, 8, 5, 2, 1, 1, 1, 2, 1, 1, 1, 4, 2, 1, 1, 2, 1, 1, 8, 4, 2, 1, 1, 2, 1, 1, 4, 2, 1, 1, 2, 1, 1, 16, 8, 4, 2, 1, 1, 1, 2, 1, 1, 4, 2, 1, 1, 2, 1, 1, 8, 4, 2, 1, 1, 2, 1, 1, 4, 2, 1, 1, 2, 1, 1 };
 
-static const unsigned int strat_Bob[MAX_Bob-1] = {
-86, 48, 27, 15, 8, 4, 2, 1, 1, 2, 1, 1, 4, 2, 1, 1, 2, 1, 1, 7, 4, 2, 1, 1, 2, 1, 
-1, 3, 2, 1, 1, 1, 1, 12, 7, 4, 2, 1, 1, 2, 1, 1, 3, 2, 1, 1, 1, 1, 5, 3, 2, 1, 1, 
-1, 1, 2, 1, 1, 1, 21, 12, 7, 4, 2, 1, 1, 2, 1, 1, 3, 2, 1, 1, 1, 1, 5, 3, 2, 1, 1, 
-1, 1, 2, 1, 1, 1, 9, 5, 3, 2, 1, 1, 1, 1, 2, 1, 1, 1, 4, 2, 1, 1, 1, 2, 1, 1, 38, 
-21, 12, 7, 4, 2, 1, 1, 2, 1, 1, 3, 2, 1, 1, 1, 1, 5, 3, 2, 1, 1, 1, 1, 2, 1, 1, 1, 
-9, 5, 3, 2, 1, 1, 1, 1, 2, 1, 1, 1, 4, 2, 1, 1, 1, 2, 1, 1, 17, 9, 5, 3, 2, 1, 1, 
-1, 1, 2, 1, 1, 1, 4, 2, 1, 1, 1, 2, 1, 1, 8, 4, 2, 1, 1, 1, 2, 1, 1, 4, 2, 1, 1, 2, 
-1, 1 };
+const unsigned int strat_Bob[MAX_Bob-1] = { 86, 48, 27, 15, 8, 4, 2, 1, 1, 2, 1, 1, 4, 2, 1, 1, 2, 1, 1, 7, 4, 2, 1, 1, 2, 1, 1, 3, 2, 1, 1, 1, 1, 12, 7, 4, 2, 1, 1, 2, 1, 1, 3, 2, 1, 1, 1, 1, 5, 3, 2, 1, 1, 1, 1, 2, 1, 1, 1, 21, 12, 7, 4, 2, 1, 1, 2, 1, 1, 3, 2, 1, 1, 1, 1, 5, 3, 2, 1, 1, 1, 1, 2, 1, 1, 1, 9, 5, 3, 2, 1, 1, 1, 1, 2, 1, 1, 1, 4, 2, 1, 1, 1, 2, 1, 1, 38, 21, 12, 7, 4, 2, 1, 1, 2, 1, 1, 3, 2, 1, 1, 1, 1, 5, 3, 2, 1, 1, 1, 1, 2, 1, 1, 1, 9, 5, 3, 2, 1, 1, 1, 1, 2, 1, 1, 1, 4, 2, 1, 1, 1, 2, 1, 1, 17, 9, 5, 3, 2, 1, 1, 1, 1, 2, 1, 1, 1, 4, 2, 1, 1, 1, 2, 1, 1, 8, 4, 2, 1, 1, 1, 2, 1, 1, 4, 2, 1, 1, 2, 1, 1 };
+
+
 
 // Fixed traversal strategies for Pohlig-Hellman discrete logs
-
-static const unsigned int ph2_path[PLEN_2] = { // w_2 = 5
-    0, 0, 1, 2, 3, 4, 4, 5, 5, 6, 7, 7, 8, 9, 10, 10, 11, 12, 13, 13, 14, 14, 15, 16, 17, 18, 
-  18, 18, 19, 20, 20, 21, 22, 23, 24, 25, 25, 25, 25, 26, 27, 28, 29, 29, 30, 31, 32, 33, 34, 
-  35, 35, 35, 35, 35, 36, 37, 38, 39, 40, 41, 41, 42
+static const unsigned int ph2_path[PLEN_2] = {
+#ifdef COMPRESSED_TABLES
+    #ifdef ELL2_TORUS
+        #if (W_2 == 5)
+          0, 0, 1, 2, 3, 4, 4, 5, 5, 6, 7, 7, 8, 9, 10, 10, 11, 12, 13, 13, 14, 14, 15, 16, 17, 18, 18, 18, 19, 20, 20, 21, 22, 23, 24, 25, 25, 25, 25, 26, 27, 28, 29, 29, 30, 31, 32, 33, 34, 35, 35, 35, 35, 35, 36, 37, 38, 39, 40, 41, 41, 42
+        #endif
+    #endif
+#endif
 };
 
-static const unsigned int ph3_path[PLEN_3] = { // w_3 = 6
-    0, 0, 1, 2, 3, 4, 5, 6, 6, 7, 7, 8, 9, 9, 10, 11, 12, 12, 13, 14, 15, 16, 16, 17, 18, 19, 
-    20, 21, 21, 22, 23, 24, 25
+static const unsigned int ph3_path[PLEN_3] = {
+#ifdef COMPRESSED_TABLES
+    #ifdef ELL3_FULL_SIGNED
+      #if (W_3 == 3)
+        0, 0, 1, 2, 3, 3, 4, 4, 5, 6, 6, 7, 8, 9, 9, 9, 10, 11, 12, 13, 13, 13, 13, 14, 15, 16, 17, 18, 19, 19, 19, 19, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 28, 28, 28, 28, 28, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 41, 41, 41, 41
+      #endif
+    #endif
+#endif
 };
+
 
 // Entangled bases related static tables and parameters
 
@@ -307,7 +311,7 @@ static const uint64_t table_v_qnr[TABLE_V_LEN][NWORDS64_FIELD] =
 {0xB04ACFA73EA0C46C,0xCF933F68BB9B3F4A,0x15AE5CE2F27DB04C,0x1695B1823A1F6D59,0xD753A316CA51CB6,0x7445E2D99B0BA50B,0xB6F9A9A580E786,0x51545996DACD4F17,0x112B452323F4F0A3,0xAFBF4B5F},
 {0xA8982A5E43B37B3,0x4D1DFB947C1F2BC7,0x7A938628C766F64A,0x545AB97381CCDA04,0xD8ACCB93F83D4C5B,0xCA5959634A186221,0x9E72DEA20E161486,0x3FB2EF9969B4F6C,0xA62EC7356550C78,0x1C0F7BD25}};
 
-static const uint64_t v_3_torsion[20][2 * NWORDS64_FIELD] =
+static const uint64_t v_3_torsion[TABLE_V3_LEN][2 * NWORDS64_FIELD] =
 {{0x6EB3E454124AAF4,0xEB3E45306EB3E453,0x3E45306EB3E45306,0x45306EB3E45306EB,0x286B3E45306EB3E,0x375E62F5BC7C82AF,0x650BCBF202B9AE38,0x3FDD465F450DFCFD,0xC63A99445C986900,0x250ED785C,0x2983759F1FCF38D7,0x83759F22983759F2,0x759F22983759F229,0x9F22983759F22983,0x4EEA3759F2298375,0x87430979EEB424F2,0x4D75F319566660DA,0x30CD05437A146239,0xA2641600BDE8C04,0x712AA3BE},
 {0xCF43C7FB897F2FE2,0x3C7FB84C2F0E011E,0xFB84C2F0E011ECF4,0x4C2F0E011ECF43C7,0x751C11ECF43C7FB8,0x1D007C113B5D095,0x4235B0D5E66773CE,0x9E42B6C94350F39E,0xB98F10656ABF493B,0xA2738C79,0xC023D9E87818892A,0x3D9E878FF70985E1,0xE878FF70985E1C02,0x8FF70985E1C023D9,0x52445E1C023D9E87,0xC4A56A1DB3037852,0xBE1F9B0F8C463146,0xD7DB04211C8A255B,0x87C4C4B67CF93C1C,0x96C2BFBD},
 {0xBB5E4448409D1B64,0x9650668A321ACCD8,0x48D39ADBC2F1339E,0x8F7071B9DA7AD093,0xDC2BFF88AE51552D,0x67B12046E4504FA2,0xDAC40568A6E7ACA6,0x62ACCE83A2BE7FE7,0xCEBB880D5DC0D19E,0x25FA2A502,0x12FE408DB093593F,0xAAF044FB38FAC1A9,0x2726CD500D0CEF1,0x1605D37D0757467F,0x1B66F6542117A77,0x1350C0D1B1A7435E,0x51F0069F69135871,0x203791450029A4BC,0x42B7E3FCB870BE19,0x1CDC6F300},
@@ -346,6 +350,9 @@ static const uint64_t v_3_torsion[20][2 * NWORDS64_FIELD] =
 #define fp2zero                       fp2zero610
 #define fp2add                        fp2add610
 #define fp2sub                        fp2sub610
+#define mp_sub_p2                     mp_sub610_p2
+#define mp_sub_p4                     mp_sub610_p4
+#define sub_p4                        mp_sub_p4
 #define fp2neg                        fp2neg610
 #define fp2div2                       fp2div2_610
 #define fp2correction                 fp2correction610

@@ -1,4 +1,4 @@
-####  Makefile for compilation on Linux  ####
+####  Makefile for compilation on Unix-like operative systems  ####
 
 OPT=-O3     # Optimization option by default
 
@@ -16,6 +16,9 @@ ifeq "$(ARCH)" "x64"
     USE_OPT_LEVEL=_FAST_
 else ifeq "$(ARCH)" "x86"
     ARCHITECTURE=_X86_
+    USE_OPT_LEVEL=_GENERIC_
+else ifeq "$(ARCH)" "s390x"
+    ARCHITECTURE=_S390X_
     USE_OPT_LEVEL=_GENERIC_
 else ifeq "$(ARCH)" "ARM"
     ARCHITECTURE=_ARM_
@@ -58,8 +61,11 @@ ifeq "$(ARM_TARGET)" "YES"
     ADDITIONAL_SETTINGS=
 endif
 endif
+ifeq "$(ARCHITECTURE)" "_S390X_"
+	ADDITIONAL_SETTINGS=-march=z10
+endif
 
-CFLAGS=$(OPT) $(ADDITIONAL_SETTINGS) -D $(ARCHITECTURE) -D __LINUX__ -D $(USE_OPT_LEVEL) $(MULX) $(ADX)
+CFLAGS=$(OPT) -std=gnu11 $(ADDITIONAL_SETTINGS) -D $(ARCHITECTURE) -D __NIX__ -D $(USE_OPT_LEVEL) $(MULX) $(ADX)
 LDFLAGS=-lm
 ifeq "$(USE_OPT_LEVEL)" "_GENERIC_"
     EXTRA_OBJECTS_434=objs434/fp_generic.o
@@ -73,9 +79,9 @@ ifeq "$(ARCHITECTURE)" "_AMD64_"
     EXTRA_OBJECTS_610=objs610/fp_x64.o objs610/fp_x64_asm.o
     EXTRA_OBJECTS_751=objs751/fp_x64.o objs751/fp_x64_asm.o
 else ifeq "$(ARCHITECTURE)" "_ARM64_"
-    EXTRA_OBJECTS_434=objs434/fp_generic.o
+    EXTRA_OBJECTS_434=objs434/fp_arm64.o objs434/fp_arm64_asm.o
     EXTRA_OBJECTS_503=objs503/fp_arm64.o objs503/fp_arm64_asm.o
-    EXTRA_OBJECTS_610=objs610/fp_generic.o
+    EXTRA_OBJECTS_610=objs610/fp_arm64.o objs610/fp_arm64_asm.o
     EXTRA_OBJECTS_751=objs751/fp_arm64.o objs751/fp_arm64_asm.o
 endif
 endif
@@ -159,9 +165,12 @@ ifeq "$(ARCHITECTURE)" "_AMD64_"
 
     objs751/fp_x64_asm.o: src/P751/AMD64/fp_x64_asm.S
 	    $(CC) -c $(CFLAGS) src/P751/AMD64/fp_x64_asm.S -o objs751/fp_x64_asm.o
-else ifeq "$(ARCHITECTURE)" "_ARM64_"
-    objs434/fp_generic.o: src/P434/generic/fp_generic.c
-	    $(CC) -c $(CFLAGS) src/P434/generic/fp_generic.c -o objs434/fp_generic.o
+else ifeq "$(ARCHITECTURE)" "_ARM64_"	
+    objs434/fp_arm64.o: src/P434/ARM64/fp_arm64.c
+	    $(CC) -c $(CFLAGS) src/P434/ARM64/fp_arm64.c -o objs434/fp_arm64.o
+
+    objs434/fp_arm64_asm.o: src/P434/ARM64/fp_arm64_asm.S
+	    $(CC) -c $(CFLAGS) src/P434/ARM64/fp_arm64_asm.S -o objs434/fp_arm64_asm.o
 
     objs503/fp_arm64.o: src/P503/ARM64/fp_arm64.c
 	    $(CC) -c $(CFLAGS) src/P503/ARM64/fp_arm64.c -o objs503/fp_arm64.o
@@ -169,8 +178,11 @@ else ifeq "$(ARCHITECTURE)" "_ARM64_"
     objs503/fp_arm64_asm.o: src/P503/ARM64/fp_arm64_asm.S
 	    $(CC) -c $(CFLAGS) src/P503/ARM64/fp_arm64_asm.S -o objs503/fp_arm64_asm.o
 
-    objs610/fp_generic.o: src/P610/generic/fp_generic.c
-	    $(CC) -c $(CFLAGS) src/P610/generic/fp_generic.c -o objs610/fp_generic.o
+    objs610/fp_arm64.o: src/P610/ARM64/fp_arm64.c
+	    $(CC) -c $(CFLAGS) src/P610/ARM64/fp_arm64.c -o objs610/fp_arm64.o
+
+    objs610/fp_arm64_asm.o: src/P610/ARM64/fp_arm64_asm.S
+	    $(CC) -c $(CFLAGS) src/P610/ARM64/fp_arm64_asm.S -o objs610/fp_arm64_asm.o
 
     objs751/fp_arm64.o: src/P751/ARM64/fp_arm64.c
 	    $(CC) -c $(CFLAGS) src/P751/ARM64/fp_arm64.c -o objs751/fp_arm64.o

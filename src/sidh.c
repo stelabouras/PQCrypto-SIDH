@@ -5,7 +5,6 @@
 *********************************************************************************************/ 
 
 #include "random/random.h"
-#include <string.h>
 
 
 static void init_basis(digit_t *gen, f2elm_t XP, f2elm_t XQ, f2elm_t XR)
@@ -56,14 +55,14 @@ int EphemeralKeyGeneration_A(const unsigned char* PrivateKeyA, unsigned char* Pu
 
     // Initialize constants: A24plus = A+2C, C24 = 4C, where A=6, C=1
     fpcopy((digit_t*)&Montgomery_one, A24plus[0]);
-    fp2add(A24plus, A24plus, A24plus);
-    fp2add(A24plus, A24plus, C24);
-    fp2add(A24plus, C24, A);
-    fp2add(C24, C24, A24plus);
+    mp2_add(A24plus, A24plus, A24plus);
+    mp2_add(A24plus, A24plus, C24);
+    mp2_add(A24plus, C24, A);
+    mp2_add(C24, C24, A24plus);
 
     // Retrieve kernel point
-    memcpy((unsigned char*)SecretKeyA, PrivateKeyA, SECRETKEY_A_BYTES);
-    LADDER3PT(XPA, XQA, XRA, SecretKeyA, ALICE, R, A);    
+    decode_to_digits(PrivateKeyA, SecretKeyA, SECRETKEY_A_BYTES, NWORDS_ORDER);
+    LADDER3PT(XPA, XQA, XRA, SecretKeyA, ALICE, R, A);       
 
 #if (OALICE_BITS % 2 == 1)
     point_proj_t S;
@@ -139,13 +138,13 @@ int EphemeralKeyGeneration_B(const unsigned char* PrivateKeyB, unsigned char* Pu
 
     // Initialize constants: A24minus = A-2C, A24plus = A+2C, where A=6, C=1
     fpcopy((digit_t*)&Montgomery_one, A24plus[0]);
-    fp2add(A24plus, A24plus, A24plus);
-    fp2add(A24plus, A24plus, A24minus);
-    fp2add(A24plus, A24minus, A);
-    fp2add(A24minus, A24minus, A24plus);
+    mp2_add(A24plus, A24plus, A24plus);
+    mp2_add(A24plus, A24plus, A24minus);
+    mp2_add(A24plus, A24minus, A);
+    mp2_add(A24minus, A24minus, A24plus);
 
     // Retrieve kernel point
-    memcpy((unsigned char*)SecretKeyB, PrivateKeyB, SECRETKEY_B_BYTES);
+    decode_to_digits(PrivateKeyB, SecretKeyB, SECRETKEY_B_BYTES, NWORDS_ORDER);
     LADDER3PT(XPB, XQB, XRB, SecretKeyB, BOB, R, A);
     
     // Traverse tree
@@ -212,13 +211,13 @@ int EphemeralSecretAgreement_A(const unsigned char* PrivateKeyA, const unsigned 
 
     // Initialize constants: A24plus = A+2C, C24 = 4C, where C=1
     get_A(PKB[0], PKB[1], PKB[2], A);
-    fpadd((digit_t*)&Montgomery_one, (digit_t*)&Montgomery_one, C24[0]);
-    fp2add(A, C24, A24plus);
-    fpadd(C24[0], C24[0], C24[0]);
+    mp_add((digit_t*)&Montgomery_one, (digit_t*)&Montgomery_one, C24[0], NWORDS_FIELD);
+    mp2_add(A, C24, A24plus);
+    mp_add(C24[0], C24[0], C24[0], NWORDS_FIELD);
 
     // Retrieve kernel point
-    memcpy((unsigned char*)SecretKeyA, PrivateKeyA, SECRETKEY_A_BYTES);
-    LADDER3PT(PKB[0], PKB[1], PKB[2], SecretKeyA, ALICE, R, A);   
+    decode_to_digits(PrivateKeyA, SecretKeyA, SECRETKEY_A_BYTES, NWORDS_ORDER);
+    LADDER3PT(PKB[0], PKB[1], PKB[2], SecretKeyA, ALICE, R, A);    
 
 #if (OALICE_BITS % 2 == 1)
     point_proj_t S;
@@ -252,7 +251,7 @@ int EphemeralSecretAgreement_A(const unsigned char* PrivateKeyA, const unsigned 
     }
 
     get_4_isog(R, A24plus, C24, coeff); 
-    fp2add(A24plus, A24plus, A24plus);                                                
+    mp2_add(A24plus, A24plus, A24plus);                                                
     fp2sub(A24plus, C24, A24plus); 
     fp2add(A24plus, A24plus, A24plus);                    
     j_inv(A24plus, C24, jinv);
@@ -281,12 +280,12 @@ int EphemeralSecretAgreement_B(const unsigned char* PrivateKeyB, const unsigned 
 
     // Initialize constants: A24plus = A+2C, A24minus = A-2C, where C=1
     get_A(PKB[0], PKB[1], PKB[2], A);
-    fpadd((digit_t*)&Montgomery_one, (digit_t*)&Montgomery_one, A24minus[0]);
-    fp2add(A, A24minus, A24plus);
-    fp2sub(A, A24minus, A24minus);
+    mp_add((digit_t*)&Montgomery_one, (digit_t*)&Montgomery_one, A24minus[0], NWORDS_FIELD);
+    mp2_add(A, A24minus, A24plus);
+    mp2_sub_p2(A, A24minus, A24minus);
 
     // Retrieve kernel point
-    memcpy((unsigned char*)SecretKeyB, PrivateKeyB, SECRETKEY_B_BYTES);
+    decode_to_digits(PrivateKeyB, SecretKeyB, SECRETKEY_B_BYTES, NWORDS_ORDER);
     LADDER3PT(PKB[0], PKB[1], PKB[2], SecretKeyB, BOB, R, A);
     
     // Traverse tree

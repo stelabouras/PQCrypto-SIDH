@@ -4,13 +4,15 @@
 * Abstract: benchmarking/testing isogeny-based key encapsulation mechanism
 *********************************************************************************************/ 
 
+#include "../src/random/random.h"
+
 
 // Benchmark and test parameters  
 #if defined(OPTIMIZED_GENERIC_IMPLEMENTATION) || (TARGET == TARGET_ARM) 
     #define BENCH_LOOPS        5      // Number of iterations per bench 
     #define TEST_LOOPS         5      // Number of iterations per test
 #else
-    #define BENCH_LOOPS       100       
+    #define BENCH_LOOPS       100
     #define TEST_LOOPS        10      
 #endif
 
@@ -23,6 +25,8 @@ int cryptotest_kem()
     unsigned char ct[CRYPTO_CIPHERTEXTBYTES] = {0};
     unsigned char ss[CRYPTO_BYTES] = {0};
     unsigned char ss_[CRYPTO_BYTES] = {0};
+    unsigned char bytes[4];
+    uint32_t* pos = (uint32_t*)bytes;
     bool passed = true;
 
     printf("\n\nTESTING ISOGENY-BASED KEY ENCAPSULATION MECHANISM %s\n", SCHEME_NAME);
@@ -35,6 +39,17 @@ int cryptotest_kem()
         crypto_kem_dec(ss_, ct, sk);
         
         if (memcmp(ss, ss_, CRYPTO_BYTES) != 0) {
+            passed = false;
+            break;
+        }
+
+        // Testing decapsulation after changing one bit of ct
+        randombytes(bytes, 4);
+        *pos %= CRYPTO_CIPHERTEXTBYTES;
+        ct[*pos] ^= 1;
+        crypto_kem_dec(ss_, ct, sk);
+        
+        if (memcmp(ss, ss_, CRYPTO_BYTES) == 0) {
             passed = false;
             break;
         }
@@ -56,45 +71,37 @@ int cryptorun_kem()
     unsigned char ct[CRYPTO_CIPHERTEXTBYTES] = {0};
     unsigned char ss[CRYPTO_BYTES] = {0};
     unsigned char ss_[CRYPTO_BYTES] = {0};
-    unsigned long long cycles, cycles1, cycles2;
+    unsigned long long cycles_keygen = 0, cycles_encaps = 0, cycles_decaps = 0, cycles1, cycles2;
 
     printf("\n\nBENCHMARKING ISOGENY-BASED KEY ENCAPSULATION MECHANISM %s\n", SCHEME_NAME);
     printf("--------------------------------------------------------------------------------------------------------\n\n");
 
-    // Benchmarking key generation
-    cycles = 0;
     for (n = 0; n < BENCH_LOOPS; n++)
     {
+        // Benchmarking key generation
         cycles1 = cpucycles();
         crypto_kem_keypair(pk, sk);
         cycles2 = cpucycles();
-        cycles = cycles+(cycles2-cycles1);
-    }
-    printf("  Key generation runs in ....................................... %10lld ", cycles/BENCH_LOOPS); print_unit;
-    printf("\n");
-
-    // Benchmarking encapsulation
-    cycles = 0;
-    for (n = 0; n < BENCH_LOOPS; n++)
-    {
+        cycles_keygen = cycles_keygen+(cycles2-cycles1);
+        
+        // Benchmarking encapsulation    
         cycles1 = cpucycles();
         crypto_kem_enc(ct, ss, pk);
         cycles2 = cpucycles();
-        cycles = cycles+(cycles2-cycles1);
-    }
-    printf("  Encapsulation runs in ........................................ %10lld ", cycles/BENCH_LOOPS); print_unit;
-    printf("\n");
+        cycles_encaps = cycles_encaps+(cycles2-cycles1);
 
-    // Benchmarking decapsulation
-    cycles = 0;
-    for (n = 0; n < BENCH_LOOPS; n++)
-    {
+        // Benchmarking decapsulation
         cycles1 = cpucycles();
         crypto_kem_dec(ss_, ct, sk);   
         cycles2 = cpucycles();
-        cycles = cycles+(cycles2-cycles1);
+        cycles_decaps = cycles_decaps+(cycles2-cycles1);
     }
-    printf("  Decapsulation runs in ........................................ %10lld ", cycles/BENCH_LOOPS); print_unit;
+
+    printf("  Key generation runs in ....................................... %10lld ", cycles_keygen/BENCH_LOOPS); print_unit;
+    printf("\n");
+    printf("  Encapsulation runs in ........................................ %10lld ", cycles_encaps/BENCH_LOOPS); print_unit;
+    printf("\n");        
+    printf("  Decapsulation runs in ........................................ %10lld ", cycles_decaps/BENCH_LOOPS); print_unit;
     printf("\n");
 
     return PASSED;

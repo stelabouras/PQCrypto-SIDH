@@ -7,22 +7,15 @@
 #ifndef P434_INTERNAL_H
 #define P434_INTERNAL_H
 
-#include "../common/common_funcs.h"
 #include "../config.h"
  
 
-#if (TARGET == TARGET_AMD64)
+#if (TARGET == TARGET_AMD64) || (TARGET == TARGET_ARM64) || (TARGET == TARGET_S390X)
     #define NWORDS_FIELD    7               // Number of words of a 434-bit field element
     #define p434_ZERO_WORDS 3               // Number of "0" digits in the least significant part of p434 + 1     
-#elif (TARGET == TARGET_x86)
-    #define NWORDS_FIELD    14 
-    #define p434_ZERO_WORDS 6
-#elif (TARGET == TARGET_ARM)
+#elif (TARGET == TARGET_x86) || (TARGET == TARGET_ARM)
     #define NWORDS_FIELD    14
     #define p434_ZERO_WORDS 6
-#elif (TARGET == TARGET_ARM64)
-    #define NWORDS_FIELD    7
-    #define p434_ZERO_WORDS 3
 #endif
     
 
@@ -61,27 +54,44 @@
     #define MASK3_BOB               0x7F
     #define ORDER_A_ENCODED_BYTES   SECRETKEY_A_BYTES
     #define ORDER_B_ENCODED_BYTES   SECRETKEY_B_BYTES
+    #define PARTIALLY_COMPRESSED_CHUNK_CT     (4*ORDER_A_ENCODED_BYTES + FP2_ENCODED_BYTES + 2)
     #define COMPRESSED_CHUNK_CT     (3*ORDER_A_ENCODED_BYTES + FP2_ENCODED_BYTES + 2)
     #define UNCOMPRESSEDPK_BYTES    330
     // Table sizes used by the Entangled basis generation
     #define TABLE_R_LEN 17
     #define TABLE_V_LEN 34
+    #define TABLE_V3_LEN 20
     // Parameters for discrete log computations
     // Binary Pohlig-Hellman reduced to smaller logs of order ell^W
     #define W_2 4
-    #define W_3 5
+    #define W_3 3
     // ell^w    
     #define ELL2_W (1 << W_2)    
-    #define ELL3_W 243  
+    #define ELL3_W 27
     // ell^(e mod w) 
     #define ELL2_EMODW (1 << (OALICE_BITS % W_2))    
     #define ELL3_EMODW 9
     // # of digits in the discrete log    
-    #define DLEN_2 54 // ceil(eA/W_2)
-    #define DLEN_3 28 // ceil(eB/W_3)
+    #define DLEN_2 ((OALICE_BITS+W_2-1)/W_2) // ceil(eA/W_2)
+    #define DLEN_3 ((OBOB_EXPON+W_3-1)/W_3)  // ceil(eB/W_3)
+    // Use compressed tables: FULL_SIGNED
+    #define COMPRESSED_TABLES
+    #define ELL2_TORUS
+    #define ELL3_FULL_SIGNED    // Uses signed digits to reduce table size by half
     // Length of the optimal strategy path for Pohlig-Hellman
-    #define PLEN_2 55
-    #define PLEN_3 29
+    #ifdef COMPRESSED_TABLES
+        #if W_2 == 4
+            #define PLEN_2 55
+        #endif
+        #ifdef ELL2_TORUS
+            #define W_2_1 3
+        #endif
+        #ifdef ELL3_FULL_SIGNED
+            #if W_3 == 3
+                #define PLEN_3 47
+            #endif
+        #endif
+    #endif
 #endif
 
 
@@ -104,39 +114,19 @@ typedef point_proj point_proj_t[1];
     typedef f2elm_t publickey_t[3];      
 #endif
 
-// Definitions to use/map function names to specific SIDH types.
-// necessary to avoid multiple definitions when combining the various
-// SIDH modules into a single library
-#define from_fp2mont    from_fp2montp434
-#define from_mont       from_montp434
-#define mp_add          mp_addp434
-#define mp_sub          mp_subp434
-#define to_fp2mont      to_fp2montp434
-#define to_mont         to_montp434
-#define digit_x_digit   digit_x_digitp434
-#define mp_mul          mp_mulp434
-#define rdc_mont        rdc_montp434
-
-#define xDBL            xDBLp434
-#define get_4_isog      get_4_isogp434
-#define eval_4_isog     eval_4_isogp434
-#define xTPL            xTPLp434
-#define get_3_isog      get_3_isogp434
-#define eval_3_isog     eval_3_isogp434
 
 /**************** Function prototypes ****************/
-/************* Multiprecision functions **************/ 
-
-
-// Multiprecision addition, c = a+b, where lng(a) = lng(b) = nwords. Returns the carry bit 
-unsigned int mp_add(const digit_t* a, const digit_t* b, digit_t* c, const unsigned int nwords);
+/************* Multiprecision functions **************/
 
 // 434-bit multiprecision addition, c = a+b
 void mp_add434(const digit_t* a, const digit_t* b, digit_t* c);
-void mp_add434_asm(const digit_t* a, const digit_t* b, digit_t* c); 
+void mp_add434_asm(const digit_t* a, const digit_t* b, digit_t* c);
 
-// Multiprecision subtraction, c = a-b, where lng(a) = lng(b) = nwords. Returns the borrow bit 
-unsigned int mp_sub(const digit_t* a, const digit_t* b, digit_t* c, const unsigned int nwords);
+// 434-bit multiprecision subtraction, c = a-b+2p or c = a-b+4p
+extern void mp_sub434_p2(const digit_t* a, const digit_t* b, digit_t* c);
+extern void mp_sub434_p4(const digit_t* a, const digit_t* b, digit_t* c);
+void mp_sub434_p2_asm(const digit_t* a, const digit_t* b, digit_t* c);
+void mp_sub434_p4_asm(const digit_t* a, const digit_t* b, digit_t* c);
 
 // 2x434-bit multiprecision subtraction followed by addition with p434*2^448, c = a-b+(p434*2^448) if a-b < 0, otherwise c=a-b 
 void mp_subaddx2_asm(const digit_t* a, const digit_t* b, digit_t* c);
@@ -144,12 +134,6 @@ void mp_subadd434x2_asm(const digit_t* a, const digit_t* b, digit_t* c);
 
 // Double 2x434-bit multiprecision subtraction, c = c-a-b, where c > a and c > b
 void mp_dblsub434x2_asm(const digit_t* a, const digit_t* b, digit_t* c);
-
-// Digit multiplication, digit * digit -> 2-digit result
-void digit_x_digit(const digit_t a, const digit_t b, digit_t* c); 
-
-// Multiprecision comba multiply, c = a*b, where lng(a) = lng(b) = nwords.
-void mp_mul(const digit_t* a, const digit_t* b, digit_t* c, const unsigned int nwords);
 
 /************ Field arithmetic functions *************/
 
@@ -180,7 +164,6 @@ void fpdiv2_434(const digit_t* a, digit_t* c);
 void fpcorrection434(digit_t* a);
 
 // 434-bit Montgomery reduction, c = a mod p
-void rdc_mont(digit_t* a, digit_t* c);
 void rdc434_asm(digit_t* ma, digit_t* mc);
             
 // Field multiplication using Montgomery arithmetic, c = a*b*R^-1 mod p434, where R=2^768
@@ -189,12 +172,6 @@ void mul434_asm(const digit_t* a, const digit_t* b, digit_t* c);
    
 // Field squaring using Montgomery arithmetic, c = a*b*R^-1 mod p434, where R=2^768
 void fpsqr434_mont(const digit_t* ma, digit_t* mc);
-
-// Conversion to Montgomery representation
-void to_mont(const digit_t* a, digit_t* mc);
-    
-// Conversion from Montgomery representation to standard representation
-void from_mont(const digit_t* ma, digit_t* c);
 
 // Field inversion, a = a^-1 in GF(p434)
 void fpinv434_mont(digit_t* a);
@@ -233,12 +210,6 @@ void fp2sqr434_mont(const f2elm_t a, f2elm_t c);
  
 // GF(p434^2) multiplication using Montgomery arithmetic, c = a*b in GF(p434^2)
 void fp2mul434_mont(const f2elm_t a, const f2elm_t b, f2elm_t c);
-    
-// Conversion of a GF(p434^2) element to Montgomery representation
-void to_fp2mont(const f2elm_t a, f2elm_t mc);
-
-// Conversion of a GF(p434^2) element from Montgomery representation to standard representation
-void from_fp2mont(const f2elm_t ma, f2elm_t c);
 
 // GF(p434^2) inversion using Montgomery arithmetic, a = (a0-i*a1)/(a0^2+a1^2)
 void fp2inv434_mont(f2elm_t a);
@@ -246,50 +217,5 @@ void fp2inv434_mont(f2elm_t a);
 // GF(p434^2) inversion, a = (a0-i*a1)/(a0^2+a1^2), GF(p434) inversion done using the binary GCD 
 void fp2inv434_mont_bingcd(f2elm_t a);
 
-// n-way Montgomery inversion
-void mont_n_way_inv(const f2elm_t* vec, const int n, f2elm_t* out);
-
-/************ Elliptic curve and isogeny functions *************/
-
-// Doubling of a Montgomery point in projective coordinates (X:Z).
-void xDBL(const point_proj_t P, point_proj_t Q, const f2elm_t A24plus, const f2elm_t C24);
-// Computes the corresponding 4-isogeny of a projective Montgomery point (X4:Z4) of order 4.
-
-void get_4_isog(const point_proj_t P, f2elm_t A24plus, f2elm_t C24, f2elm_t* coeff);
-
-// Evaluates the isogeny at the point (X:Z) in the domain of the isogeny.
-void eval_4_isog(point_proj_t P, f2elm_t* coeff);
-
-// Tripling of a Montgomery point in projective coordinates (X:Z).
-void xTPL(const point_proj_t P, point_proj_t Q, const f2elm_t A24minus, const f2elm_t A24plus);
-
-// Computes the corresponding 3-isogeny of a projective Montgomery point (X3:Z3) of order 3.
-void get_3_isog(const point_proj_t P, f2elm_t A24minus, f2elm_t A24plus, f2elm_t* coeff);
-
-// Computes the 3-isogeny R=phi(X:Z), given projective point (X3:Z3) of order 3 on a Montgomery curve and a point P with coefficients given in coeff.
-void eval_3_isog(point_proj_t Q, const f2elm_t* coeff);
-
-#if 0
-// Computes the j-invariant of a Montgomery curve with projective constant.
-void j_inv(const f2elm_t A, const f2elm_t C, f2elm_t jinv);
-
-// Simultaneous doubling and differential addition.
-void xDBLADD(point_proj_t P, point_proj_t Q, const f2elm_t xPQ, const f2elm_t A24);
-
-// Computes [2^e](X:Z) on Montgomery curve with projective constant via e repeated doublings.
-void xDBLe(const point_proj_t P, point_proj_t Q, const f2elm_t A24plus, const f2elm_t C24, const int e);
-
-// Differential addition.
-void xADD(point_proj_t P, const point_proj_t Q, const f2elm_t xPQ);
-
-// Computes [3^e](X:Z) on Montgomery curve with projective constant via e repeated triplings.
-void xTPLe(const point_proj_t P, point_proj_t Q, const f2elm_t A24minus, const f2elm_t A24plus, const int e);
-
-// 3-way simultaneous inversion
-void inv_3_way(f2elm_t z1, f2elm_t z2, f2elm_t z3);
-
-// Given the x-coordinates of P, Q, and R, returns the value A corresponding to the Montgomery curve E_A: y^2=x^3+A*x^2+x such that R=Q-P on E_A.
-void get_A(const f2elm_t xP, const f2elm_t xQ, const f2elm_t xR, f2elm_t A);
-#endif
 
 #endif
