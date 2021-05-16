@@ -242,7 +242,7 @@ static void get_A(const f2elm_t xP, const f2elm_t xQ, const f2elm_t xR, f2elm_t 
 }
 
 
-void j_inv(const f2elm_t A, const f2elm_t C, f2elm_t jinv)
+static void j_inv(const f2elm_t A, const f2elm_t C, f2elm_t jinv)
 { // Computes the j-invariant of a Montgomery curve with projective constant.
   // Input: A,C in GF(p^2).
   // Output: j=256*(A^2-3*C^2)^3/(C^4*(A^2-4*C^2)), which is the j-invariant of the Montgomery curve B*y^2=x^3+(A/C)*x^2+x or (equivalently) j-invariant of B'*y^2=C*x^3+A*x^2+C*x.

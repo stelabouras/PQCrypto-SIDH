@@ -6,18 +6,18 @@
 
 #include <string.h>
 
+// WDI - moved to common/common_funcs.*
+//static void clear_words(void* mem, digit_t nwords)
+//{ // Clear digits from memory. "nwords" indicates the number of digits to be zeroed.
+//  // This function uses the volatile type qualifier to inform the compiler not to optimize out the memory clearing.
+//    volatile digit_t *v = mem;
+//
+//    for (unsigned int i = 0; i < nwords; i++)
+//        v[i] = 0;
+//}
 
-void clear_words(void* mem, digit_t nwords)
-{ // Clear digits from memory. "nwords" indicates the number of digits to be zeroed.
-  // This function uses the volatile type qualifier to inform the compiler not to optimize out the memory clearing.
-    volatile digit_t *v = mem;
 
-    for (unsigned int i = 0; i < nwords; i++)
-        v[i] = 0;
-}
-
-
-int8_t ct_compare(const uint8_t *a, const uint8_t *b, unsigned int len)
+static int8_t ct_compare(const uint8_t *a, const uint8_t *b, unsigned int len)
 { // Compare two byte arrays in constant time.
   // Returns 0 if the byte arrays are equal, -1 otherwise.
     uint8_t r = 0;
@@ -29,7 +29,7 @@ int8_t ct_compare(const uint8_t *a, const uint8_t *b, unsigned int len)
 }
 
 
-void ct_cmov(uint8_t *r, const uint8_t *a, unsigned int len, int8_t selector)
+static void ct_cmov(uint8_t *r, const uint8_t *a, unsigned int len, int8_t selector)
 { // Conditional move in constant time.
   // If selector = -1 then load r with a, else if selector = 0 then keep r.
 
@@ -124,14 +124,14 @@ void from_mont(const felm_t ma, felm_t c)
     fpcorrection(c);
 }
 
-
-void copy_words(const digit_t* a, digit_t* c, const unsigned int nwords)
-{ // Copy wordsize digits, c = a, where lng(a) = nwords.
-    unsigned int i;
-        
-    for (i = 0; i < nwords; i++)                      
-        c[i] = a[i];
-}
+// WDI - moved to common/common_funcs.*
+//static void copy_words(const digit_t* a, digit_t* c, const unsigned int nwords)
+//{ // Copy wordsize digits, c = a, where lng(a) = nwords.
+//    unsigned int i;
+//
+//    for (i = 0; i < nwords; i++)
+//        c[i] = a[i];
+//}
 
 void fpmul_mont(const felm_t ma, const felm_t mb, felm_t mc)
 { // Multiprecision multiplication, c = a*b mod p.
@@ -247,7 +247,7 @@ __inline static void mp2_sub_p4(const f2elm_t a, const f2elm_t b, f2elm_t c)
 }
 
 
-__inline unsigned int mp_add(const digit_t* a, const digit_t* b, digit_t* c, const unsigned int nwords)
+static __inline unsigned int mp_add(const digit_t* a, const digit_t* b, digit_t* c, const unsigned int nwords)
 { // Multiprecision addition, c = a+b, where lng(a) = lng(b) = nwords. Returns the carry bit.
     unsigned int i, carry = 0;
 
@@ -273,7 +273,7 @@ void fp2sqr_mont(const f2elm_t a, f2elm_t c)
 }
 
 
-__inline unsigned int mp_sub(const digit_t* a, const digit_t* b, digit_t* c, const unsigned int nwords)
+static __inline unsigned int mp_sub(const digit_t* a, const digit_t* b, digit_t* c, const unsigned int nwords)
 { // Multiprecision subtraction, c = a-b, where lng(a) = lng(b) = nwords. Returns the borrow bit.
     unsigned int i, borrow = 0;
 
@@ -786,48 +786,48 @@ void from_fp2mont(const f2elm_t ma, f2elm_t c)
     from_mont(ma[1], c[1]);
 }
 
+// WDI - moved to common/common_funcs.*
+//static void mp_shiftleft(digit_t* x, unsigned int shift, const unsigned int nwords)
+//{
+//    unsigned int i, j = 0;
+//
+//    while (shift > RADIX) {
+//        j += 1;
+//        shift -= RADIX;
+//    }
+//
+//    for (i = 0; i < nwords-j; i++)
+//        x[nwords-1-i] = x[nwords-1-i-j];
+//    for (i = nwords-j; i < nwords; i++)
+//        x[nwords-1-i] = 0;
+//    if (shift != 0) {
+//        for (j = nwords-1; j > 0; j--)
+//            SHIFTL(x[j], x[j-1], shift, x[j], RADIX);
+//        x[0] <<= shift;
+//    }
+//}
 
-void mp_shiftleft(digit_t* x, unsigned int shift, const unsigned int nwords)
-{
-    unsigned int i, j = 0;
+// WDI moved to common/common_funcs.*
+//static void mp_shiftr1(digit_t* x, const unsigned int nwords)
+//{ // Multiprecision right shift by one.
+//    unsigned int i;
+//
+//    for (i = 0; i < nwords-1; i++) {
+//        SHIFTR(x[i+1], x[i], 1, x[i], RADIX);
+//    }
+//    x[nwords-1] >>= 1;
+//}
 
-    while (shift > RADIX) {
-        j += 1;
-        shift -= RADIX;
-    }
-
-    for (i = 0; i < nwords-j; i++) 
-        x[nwords-1-i] = x[nwords-1-i-j];
-    for (i = nwords-j; i < nwords; i++) 
-        x[nwords-1-i] = 0;
-    if (shift != 0) {
-        for (j = nwords-1; j > 0; j--) 
-            SHIFTL(x[j], x[j-1], shift, x[j], RADIX);
-        x[0] <<= shift;
-    }
-}
-
-
-void mp_shiftr1(digit_t* x, const unsigned int nwords)
-{ // Multiprecision right shift by one.
-    unsigned int i;
-
-    for (i = 0; i < nwords-1; i++) {
-        SHIFTR(x[i+1], x[i], 1, x[i], RADIX);
-    }
-    x[nwords-1] >>= 1;
-}
-
-
-void mp_shiftl1(digit_t* x, const unsigned int nwords)
-{ // Multiprecision left shift by one.
-    int i;
-
-    for (i = nwords-1; i > 0; i--) {
-        SHIFTL(x[i], x[i-1], 1, x[i], RADIX);
-    }
-    x[0] <<= 1;
-}
+// WDI - moved to common/common_funcs.*
+//static void mp_shiftl1(digit_t* x, const unsigned int nwords)
+//{ // Multiprecision left shift by one.
+//    int i;
+//
+//    for (i = nwords-1; i > 0; i--) {
+//        SHIFTL(x[i], x[i-1], 1, x[i], RADIX);
+//    }
+//    x[0] <<= 1;
+//}
 
 #ifdef COMPRESS
 

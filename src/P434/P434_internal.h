@@ -7,6 +7,8 @@
 #ifndef P434_INTERNAL_H
 #define P434_INTERNAL_H
 
+// WDI - implement common function to avoid multiple definitions when linking
+#include "../common/common_funcs.h"
 #include "../config.h"
  
 
@@ -114,6 +116,22 @@ typedef point_proj point_proj_t[1];
     typedef f2elm_t publickey_t[3];      
 #endif
 
+// Definitions to use/map function names to specific SIDH types.
+// necessary to avoid multiple definitions when combining the various
+// SIDH modules into a single library
+#define from_fp2mont    from_fp2montp434
+#define from_mont       from_montp434
+#define to_fp2mont      to_fp2montp434
+#define to_mont         to_montp434
+#define mp_mul          mp_mulp434
+#define rdc_mont        rdc_montp434
+
+#define xDBL            xDBLp434
+#define get_4_isog      get_4_isogp434
+#define eval_4_isog     eval_4_isogp434
+#define xTPL            xTPLp434
+#define get_3_isog      get_3_isogp434
+#define eval_3_isog     eval_3_isogp434
 
 /**************** Function prototypes ****************/
 /************* Multiprecision functions **************/

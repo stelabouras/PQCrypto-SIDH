@@ -34,4 +34,6 @@ void clear_words(void* mem, digit_t nwords);
 // Copy wordsize digits, c = a, where lng(a) = nwords
 void copy_words(const digit_t* a, digit_t* c, const unsigned int nwords);
 
+// Digit multiplication, digit * digit -> 2-digit result
+void digit_x_digit(const digit_t a, const digit_t b, digit_t* c);
 #endif //SIDH_COMMON_FUNCS_H

@@ -105,7 +105,7 @@ endif()
 set (LIBRARY_BUILD_TYPE "STATIC")
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux" OR ANDROID)
-    set (SYSTEM "__LINUX__")
+    set (SYSTEM "__NIX__")
 endif()
 
 set (ADDITIONAL_SETTING "-march=native")
