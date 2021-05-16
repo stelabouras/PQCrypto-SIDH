@@ -217,13 +217,13 @@ static int32_t initializeFieldLengthsInfo(JNIEnv * env) {
     }
 
     publicKeyID = env->GetFieldID(fieldLengthsClass, "publicKey", "J");
-    if (privateKeyBID == nullptr) {
+    if (publicKeyID == nullptr) {
         clearGlobalReferences(env);
         return -4;
     }
 
     sharedSecretID = env->GetFieldID(fieldLengthsClass, "sharedSecret", "J");
-    if (privateKeyBID == nullptr) {
+    if (sharedSecretID == nullptr) {
         clearGlobalReferences(env);
         return -5;
     }
@@ -253,28 +253,28 @@ JNI_FUNCTION_TESTS(runSidhTests)(JNIEnv *env, jclass clazz, jint sidhType, jint 
 
     switch (sidhType) {
         case VAR(P434):
-            OK = OK && arithTests434((RunTestBits)testMask);
+            OK = arithTests434((RunTestBits)testMask);
             if (testMask & VAR_TEST(DiffieHellman)) {
                 OK = OK && (dhTestsp434() == 0);
             }
             return (jboolean)OK;
 
         case VAR(P503):
-            OK = OK && arithTests503((RunTestBits)testMask);
+            OK = arithTests503((RunTestBits)testMask);
             if (testMask & VAR_TEST(DiffieHellman)) {
                 OK = OK && (dhTestsp503() == 0);
             }
             return (jboolean)OK;
 
         case VAR(P610):
-            OK = OK && arithTests610((RunTestBits)testMask);
+            OK = arithTests610((RunTestBits)testMask);
             if (testMask & VAR_TEST(DiffieHellman)) {
                 OK = OK && (dhTestsp610() == 0);
             }
             return (jboolean)OK;
 
         case VAR(P751):
-            OK = OK && arithTests751((RunTestBits)testMask);
+            OK = arithTests751((RunTestBits)testMask);
             if (testMask & VAR_TEST(DiffieHellman)) {
                 OK = OK && (dhTestsp751() == 0);
             }
