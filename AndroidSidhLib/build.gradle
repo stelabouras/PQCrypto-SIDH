@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    compileSdkVersion 29
+    compileSdkVersion 30
 
     // Encapsulates your external native build configurations.
     externalNativeBuild {
@@ -18,7 +18,7 @@ android {
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 29
+        targetSdkVersion 30
         versionCode 1
         versionName "1.0"
 
@@ -32,7 +32,7 @@ android {
                 targets "androidSidhStatic"
               } else {
                 // Passes optional arguments to CMake. Make sure it is a list, not just a string :-) .
-                arguments "-DANDROID_NATIVE_API_LEVEL=21", "-DANDROID_STL=c++_shared", "-DANDROID=true"
+                arguments "-DANDROID_NATIVE_API_LEVEL=21", "-DANDROID_STL=c++_shared", "-DANDROID=true", "-DBUILD_TESTS=true"
                 targets "androidSidh"
               }
 
