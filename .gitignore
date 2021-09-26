@@ -26,3 +26,14 @@ objs751comp/
 .vs/
 *.VC.db
 *.VC.VC.opendb
+
+# WDI - add other build dirs and stuff
+build/
+cmake-build-*/
+.idea
+.gradle
+.github
+*.idea
+*.class
+*.iml
+local.properties
