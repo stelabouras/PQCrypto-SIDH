@@ -15,7 +15,7 @@
 //
 
 buildscript {
-    ext.kotlin_version = '1.5.30'
+    ext.kotlin_version = '1.5.31'
     ext.kotlin_coroutines_version = '1.0.0'
 
     repositories {

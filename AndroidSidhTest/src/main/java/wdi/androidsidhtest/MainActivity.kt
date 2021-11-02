@@ -129,11 +129,17 @@ class MainActivity : AppCompatActivity() {
         logData.text = ""
         SidhCallback.dataList.clear()
 
+        val startTime = System.nanoTime()
         launchScope.launch{
             for (runTest in runTestsFor) {
                 if (runTest == 0) continue
                 SidhNativeTests.runSidhTests(runTest, testMask)
             }
+            // Four benchmark loops, each loop has 100 iterations.
+            // It's just a rough crosscheck to see if the internal reporting makes
+            // sense.
+            val runTime = (System.nanoTime() - startTime)/400
+            SidhCallback.loggingCallback(2, "\nElapsed time (nano time): $runTime\n")
             CoroutineScope(Dispatchers.Main).launch {
                 resetSelections()
            }
@@ -174,7 +180,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun switchSelectorVisibility(show: Boolean) {
-        if (show) selectorGroup.visibility = View.VISIBLE else selectorGroup.visibility = View.INVISIBLE
+        if (show) selectorGroup.visibility = View.VISIBLE else selectorGroup.visibility = View.GONE
         selectorGroup.requestLayout()
     }
 

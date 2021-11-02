@@ -6,7 +6,7 @@
 
 
 // Benchmark and test parameters  
-#if defined(OPTIMIZED_GENERIC_IMPLEMENTATION) || (TARGET == TARGET_ARM) 
+#if defined(GENERIC_IMPLEMENTATION) || (TARGET == TARGET_ARM)
     #define BENCH_LOOPS        5      // Number of iterations per bench 
     #define TEST_LOOPS         5      // Number of iterations per test
 #else
@@ -23,8 +23,8 @@ static int cryptotest_kex()
     unsigned char SharedSecretA[SIDH_BYTES], SharedSecretB[SIDH_BYTES];
     bool passed = true;
 
-    PRINTF("\n\nTESTING EPHEMERAL ISOGENY-BASED KEY EXCHANGE SYSTEM %s\n", SCHEME_NAME);
-    PRINTF("--------------------------------------------------------------------------------------------------------\n\n");
+    PRINTF("TESTING EPHEMERAL SIDH %s\n", SCHEME_NAME);
+    PRINTF("------------------------------------------------------------------\n");
 
     for (i = 0; i < TEST_LOOPS; i++) 
     {
@@ -42,8 +42,11 @@ static int cryptotest_kex()
         }
     }
 
-    if (passed == true) PRINTF("  Key exchange tests ........................................... PASSED");
-    else { PRINTF("  Key exchange tests ... FAILED"); PRINTF("\n"); return FAILED; }
+    if (passed == true)
+        PRINTF("  Key exchange tests ........................................... PASSED");
+    else {
+        PRINTF("  Key exchange tests ... FAILED"); PRINTF("\n"); return FAILED;
+    }
     PRINTF("\n"); 
 
     return PASSED;
@@ -58,8 +61,8 @@ static int cryptorun_kex()
     unsigned char SharedSecretA[SIDH_BYTES], SharedSecretB[SIDH_BYTES];
     unsigned long long cycles, cycles1, cycles2;
 
-    PRINTF("\n\nBENCHMARKING EPHEMERAL ISOGENY-BASED KEY EXCHANGE SYSTEM %s\n", SCHEME_NAME);
-    PRINTF("--------------------------------------------------------------------------------------------------------\n\n");
+    PRINTF("\nBENCHMARKING EPHEMERAL SIDH %s (%d)\n", SCHEME_NAME, BENCH_LOOPS);
+    PRINTF("------------------------------------------------------------------\n");
 
     random_mod_order_A(PrivateKeyA);
     random_mod_order_B(PrivateKeyB);
@@ -73,7 +76,7 @@ static int cryptorun_kex()
         cycles2 = cpucycles();
         cycles = cycles+(cycles2-cycles1);
     }
-    PRINTF("  Alice's key generation runs in ............................... %10lld ", cycles/BENCH_LOOPS); print_unit;
+    PRINTF("  Alice's key generation runs in .... %10lld ", cycles/BENCH_LOOPS); print_unit;
     PRINTF("\n");
 
     // Benchmarking Bob's key generation
@@ -85,7 +88,7 @@ static int cryptorun_kex()
         cycles2 = cpucycles();
         cycles = cycles+(cycles2-cycles1);
     }
-    PRINTF("  Bob's key generation runs in ................................. %10lld ", cycles/BENCH_LOOPS); print_unit;
+    PRINTF("  Bob's key generation runs in ...... %10lld ", cycles/BENCH_LOOPS); print_unit;
     PRINTF("\n");
 
     // Benchmarking Alice's shared key computation
@@ -97,7 +100,7 @@ static int cryptorun_kex()
         cycles2 = cpucycles();
         cycles = cycles+(cycles2-cycles1);
     }
-    PRINTF("  Alice's shared key computation runs in ....................... %10lld ", cycles/BENCH_LOOPS); print_unit;
+    PRINTF("  Alice's shared key comp. runs in .. %10lld ", cycles/BENCH_LOOPS); print_unit;
     PRINTF("\n");
 
     // Benchmarking Bob's shared key computation
@@ -109,7 +112,7 @@ static int cryptorun_kex()
         cycles2 = cpucycles();
         cycles = cycles+(cycles2-cycles1);
     }
-    PRINTF("  Bob's shared key computation runs in ......................... %10lld ", cycles/BENCH_LOOPS); print_unit;
+    PRINTF("  Bob's shared key comp. runs in .... %10lld ", cycles/BENCH_LOOPS); print_unit;
     PRINTF("\n");
 
     return PASSED;
