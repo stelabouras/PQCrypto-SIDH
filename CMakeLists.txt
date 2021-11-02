@@ -5,6 +5,7 @@ enable_language(ASM)
 set (VERSION 3.2.0)
 
 # cmake -Denable-x86=true|enable-x86_64=true|enable-arm=true|enable-arm64=true -DOPT_LEVEL_GENERIC=true|false
+cmake_policy(SET CMP0077 NEW)
 
 option(enable-x86_64 "Set this to true to build for a x86_64 (64 bit) architecture." OFF)
 option(enable-x86 "Set this to true to build for a x86 (32 bit) architecture." OFF)

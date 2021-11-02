@@ -83,10 +83,10 @@ static JavaVM* javaVM = nullptr;
  *
  */
 class TrackJNIThread {
-    JNIEnv *env;
-    bool attached;
+    JNIEnv *env = nullptr;
+    bool attached = false;
 public:
-    TrackJNIThread() : attached(false), env(nullptr) {
+    TrackJNIThread() {
 
         if (!javaVM) {
 #ifdef __ANDROID__
@@ -249,7 +249,7 @@ JNI_FUNCTION_TESTS(runSidhTests)(JNIEnv *env, jclass clazz, jint sidhType, jint 
     (void)env;
     (void)clazz;
 
-    bool OK = true;
+    bool OK;
 
     switch (sidhType) {
         case VAR(P434):
@@ -310,8 +310,7 @@ JNI_FUNCTION(enableLoggingCallback)(JNIEnv * env, jobject thiz) {
         if (loggingCallbackObject == nullptr) {
             return -1;
         }
-        jclass callbackClass = nullptr;
-        callbackClass = env->GetObjectClass(loggingCallbackObject);
+        jclass callbackClass = env->GetObjectClass(loggingCallbackObject);
         if (callbackClass == nullptr) {
             env->DeleteGlobalRef(loggingCallbackObject);
             return -2;
@@ -349,6 +348,8 @@ JNI_FUNCTION(disableLoggingCallback)(JNIEnv * env, jclass clazz) {
 JNIEXPORT jobject JNICALL
 JNI_FUNCTION(getFieldLengths)(JNIEnv * env, jclass clazz, jint sidhType) {
 
+    (void) clazz;
+
     if (sidhType < SidhWrapper::P434 || sidhType > SidhWrapper::P751Comp) return nullptr;
 
     if (fieldLengthsClass == nullptr) {
@@ -384,7 +385,7 @@ JNI_FUNCTION(randomModOrderA)(JNIEnv *env, jclass clazz, jint sidhType, jbyteArr
     auto dataLen = static_cast<size_t>(env->GetArrayLength(randomOut));
     if (lengths->privateKeyA != dataLen) {
         Log("%s: output field length %d does not match required length %d", __func__, dataLen, lengths->privateKeyA);
-        FLUSH;
+        FLUSH
         return (jboolean) false;
     }
     auto * tmp = (uint8_t *)env->GetByteArrayElements(randomOut, nullptr);
@@ -407,7 +408,7 @@ JNI_FUNCTION(randomModOrderB)(JNIEnv *env, jclass clazz, jint sidhType, jbyteArr
     auto dataLen = static_cast<size_t>(env->GetArrayLength(randomOut));
     if (lengths->privateKeyB != dataLen) {
         Log("%s: output field length %d does not match required length %d", __func__, dataLen, lengths->privateKeyB);
-        FLUSH;
+        FLUSH
         return (jboolean) false;
     }
     auto * tmp = (uint8_t *)env->GetByteArrayElements(randomOut, nullptr);
@@ -433,7 +434,7 @@ JNI_FUNCTION(ephemeralKeyGenerationA)(JNIEnv *env, jclass clazz, jint sidhType, 
     if (lengths->privateKeyA != privateKeyLen || lengths->publicKey != publicKeyLen) {
         Log("%s: field lengths (%d, %d) do not match required length: (%d, %d)",
                 __func__, privateKeyLen, publicKeyLen, lengths->privateKeyA, lengths->publicKey);
-        FLUSH;
+        FLUSH
         return (jboolean) false;
     }
     auto * privateTmp = (uint8_t *)env->GetByteArrayElements(privateKeyA, nullptr);
@@ -462,7 +463,7 @@ JNI_FUNCTION(ephemeralKeyGenerationB)(JNIEnv *env, jclass clazz, jint sidhType, 
     if (lengths->privateKeyB != privateKeyLen || lengths->publicKey != publicKeyLen) {
         Log("%s: field lengths (%d, %d) do not match required length: (%d, %d)",
             __func__, privateKeyLen, publicKeyLen, lengths->privateKeyA, lengths->publicKey);
-        FLUSH;
+        FLUSH
         return (jboolean) false;
     }
     auto * privateTmp = (uint8_t *)env->GetByteArrayElements(privateKeyB, nullptr);
@@ -492,7 +493,7 @@ JNI_FUNCTION(ephemeralSecretAgreementA)(JNIEnv *env, jclass clazz, jint sidhType
     if (lengths->privateKeyA != privateKeyLen || lengths->publicKey != publicKeyLen || lengths->sharedSecret != sharedSecretLen) {
         Log("%s: field lengths (%d, %d, %d) do not match required length: (%d, %d, %d)",
             __func__, privateKeyLen, publicKeyLen, sharedSecretLen, lengths->privateKeyA, lengths->publicKey, lengths->sharedSecret);
-        FLUSH;
+        FLUSH
         return (jboolean) false;
     }
     auto * privateTmp = (uint8_t *)env->GetByteArrayElements(privateKeyA, nullptr);
@@ -524,7 +525,7 @@ JNI_FUNCTION(ephemeralSecretAgreementB)(JNIEnv *env, jclass clazz, jint sidhType
     if (lengths->privateKeyB != privateKeyLen || lengths->publicKey != publicKeyLen || lengths->sharedSecret != sharedSecretLen) {
         Log("%s: field lengths (%d, %d, %d) do not match required length: (%d, %d, %d)",
             __func__, privateKeyLen, publicKeyLen, sharedSecretLen, lengths->privateKeyA, lengths->publicKey, lengths->sharedSecret);
-        FLUSH;
+        FLUSH
         return (jboolean) false;
     }
     auto * privateTmp = (uint8_t *)env->GetByteArrayElements(privateKeyB, nullptr);
