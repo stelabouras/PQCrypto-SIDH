@@ -16,6 +16,7 @@ option(OPT_LEVEL_GENERIC "Set this to true to use the portable implementation." 
 
 option(BUILD_TESTS "Set to build the unit tests using gtest framework." )
 
+## Configure for Android: set SIDH enable flags according to ANDROID_ABI
 if (ANDROID)
     if (ANDROID_ABI STREQUAL "armeabi-v7a")
         set (enable-arm true)

@@ -19,8 +19,6 @@ android {
     defaultConfig {
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 1
-        versionName "1.0"
 
         // This block is different from the one you use to link Gradle
         // to your CMake or ndk-build script.
