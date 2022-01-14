@@ -106,8 +106,8 @@ endif()
 
 set (LIBRARY_BUILD_TYPE "STATIC")
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux" OR ANDROID)
-    set (SYSTEM "__NIX__")
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Darwin" OR ANDROID)
+    add_compile_definitions(__NIX__)
 endif()
 
 set (ADDITIONAL_SETTING "-march=native")
@@ -121,7 +121,10 @@ if (NOT clang_found STREQUAL "-1")
    endif()
 endif()
 
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC ${ADDITIONAL_SETTING} ${OPT} -D${ARCHITECTURE} -D${USE_OPT_LEVEL} -D${SYSTEM} ${MULX} ${ADX}")
+add_compile_definitions(${USE_OPT_LEVEL})
+add_compile_definitions(${ARCHITECTURE})
+
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC ${ADDITIONAL_SETTING} ${OPT} ${MULX} ${ADX}")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 set (CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS}" )
 set (LDFLAGS -lm)
