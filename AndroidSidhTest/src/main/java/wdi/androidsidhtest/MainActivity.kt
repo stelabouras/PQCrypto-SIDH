@@ -7,12 +7,12 @@ import android.widget.CheckBox
 import android.widget.ScrollView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import sidhjava.SidhNative
 import sidhjava.test.SidhNativeTests
+import wdi.androidsidhtest.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
 
@@ -22,6 +22,7 @@ class MainActivity : AppCompatActivity() {
     private var runEverything = false
     private val launchScope = CoroutineScope(Dispatchers.Default)
 
+    private lateinit var binding: ActivityMainBinding
     private var runTestsFor = arrayOf(0, 0, 0, 0)
 
     private var testsOnly = false
@@ -31,9 +32,11 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
 
-        everythingSelect.setOnClickListener {
+        setContentView(binding.root)
+
+        binding.everythingSelect.setOnClickListener {
             if (it is CheckBox) {
                 runEverything = it.isChecked
                 switchSelectorVisibility(!runEverything)
@@ -41,43 +44,43 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        p434select.setOnClickListener {
+        binding.p434select.setOnClickListener {
             if (it is CheckBox) {
                 runTestsFor[P434] = if (it.isChecked) SidhNative.P434 else 0
             }
         }
-        p503select.setOnClickListener {
+        binding.p503select.setOnClickListener {
             if (it is CheckBox) {
                 runTestsFor[P503] = if (it.isChecked) SidhNative.P503 else 0
             }
         }
-        p610select.setOnClickListener {
+        binding.p610select.setOnClickListener {
             if (it is CheckBox) {
                 runTestsFor[P610] = if (it.isChecked) SidhNative.P610 else 0
             }
         }
-        p751select.setOnClickListener {
+        binding.p751select.setOnClickListener {
             if (it is CheckBox) {
                 runTestsFor[P751] = if (it.isChecked) SidhNative.P751 else 0
             }
         }
 
-        testsOnlySelect.setOnClickListener {
+        binding.testsOnlySelect.setOnClickListener {
             if (it is CheckBox) {
                 testsOnly = it.isChecked
             }
         }
-        artihBenchSelect.setOnClickListener {
+        binding.artihBenchSelect.setOnClickListener {
             if (it is CheckBox) {
                 arithmeticBench = it.isChecked
             }
         }
-        ecIsoBenchSelect.setOnClickListener {
+        binding.ecIsoBenchSelect.setOnClickListener {
             if (it is CheckBox) {
                 ecIsoBench = it.isChecked
             }
         }
-        diffieHelmanSelect.setOnClickListener {
+        binding.diffieHelmanSelect.setOnClickListener {
             if (it is CheckBox) {
                 diffieHellman = it.isChecked
             }
@@ -88,12 +91,12 @@ class MainActivity : AppCompatActivity() {
             for (txt in SidhCallback.dataList)  {
                 textBuffer.append(txt)
             }
-            logData.text = textBuffer.toString()
-            scrollText.post { scrollText.fullScroll(ScrollView.FOCUS_DOWN) }
+            binding.logData.text = textBuffer.toString()
+            binding.scrollText.post { binding.scrollText.fullScroll(ScrollView.FOCUS_DOWN) }
         })
         SidhCallback.enableSidhLogging()
 
-        runButton.setOnClickListener {
+        binding.runButton.setOnClickListener {
             it.visibility = View.INVISIBLE
             runTests()
         }
@@ -101,7 +104,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        logData.text = ""
+        binding.logData.text = ""
         SidhCallback.dataList.clear()
         SidhNative.disableLoggingCallback()
     }
@@ -122,11 +125,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (testMask == 0) {
-            runButton.visibility = View.VISIBLE
+            binding.runButton.visibility = View.VISIBLE
             return
         }
 
-        logData.text = ""
+        binding.logData.text = ""
         SidhCallback.dataList.clear()
 
         val startTime = System.nanoTime()
@@ -138,7 +141,7 @@ class MainActivity : AppCompatActivity() {
             // Four benchmark loops, each loop has 100 iterations.
             // It's just a rough crosscheck to see if the internal reporting makes
             // sense.
-            val runTime = (System.nanoTime() - startTime)/400
+            val runTime = (System.nanoTime() - startTime) / 100
             SidhCallback.loggingCallback(2, "\nElapsed time (nano time): $runTime\n")
             CoroutineScope(Dispatchers.Main).launch {
                 resetSelections()
@@ -147,15 +150,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun resetSelections() {
-        runButton.visibility = View.VISIBLE
-        p434select.isChecked = false
-        p503select.isChecked = false
-        p610select.isChecked = false
-        p751select.isChecked = false
-        testsOnlySelect.isChecked = false
-        artihBenchSelect.isChecked = false
-        ecIsoBenchSelect.isChecked = false
-        diffieHelmanSelect.isChecked = false
+        binding.runButton.visibility = View.VISIBLE
+        binding.p434select.isChecked = false
+        binding.p503select.isChecked = false
+        binding.p610select.isChecked = false
+        binding.p751select.isChecked = false
+        binding.testsOnlySelect.isChecked = false
+        binding.artihBenchSelect.isChecked = false
+        binding.ecIsoBenchSelect.isChecked = false
+        binding.diffieHelmanSelect.isChecked = false
 
         testsOnly = false
         arithmeticBench = false
@@ -180,8 +183,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun switchSelectorVisibility(show: Boolean) {
-        if (show) selectorGroup.visibility = View.VISIBLE else selectorGroup.visibility = View.GONE
-        selectorGroup.requestLayout()
+        if (show) binding.selectorGroup.visibility = View.VISIBLE else binding.selectorGroup.visibility = View.GONE
+        binding.selectorGroup.requestLayout()
     }
 
     companion object {
