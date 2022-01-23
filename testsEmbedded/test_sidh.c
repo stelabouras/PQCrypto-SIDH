@@ -5,13 +5,13 @@
 *********************************************************************************************/ 
 
 
-// Benchmark and test parameters  
+// Benchmark and test parameters
 #if defined(GENERIC_IMPLEMENTATION) || (TARGET == TARGET_ARM)
-    #define BENCH_LOOPS        5      // Number of iterations per bench 
+    #define BENCH_LOOPS        5      // Number of iterations per bench
     #define TEST_LOOPS         5      // Number of iterations per test
 #else
-    #define BENCH_LOOPS       100       
-    #define TEST_LOOPS        10      
+    #define BENCH_LOOPS       100
+    #define TEST_LOOPS        10
 #endif
 
 

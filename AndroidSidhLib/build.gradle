@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
 
     // Encapsulates your external native build configurations.
     externalNativeBuild {
@@ -13,12 +13,13 @@ android {
         cmake {
             // Provides a relative path to our CMake build script.
             path "../CMakeLists.txt"
+            version = "3.20.0+"
         }
     }
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 30
+        targetSdkVersion 31
 
         // This block is different from the one you use to link Gradle
         // to your CMake or ndk-build script.
@@ -58,9 +59,9 @@ android {
             minifyEnabled false
         }
     }
+    ndkVersion '23.1.7779620'
 }
 
 dependencies {
     compileOnly fileTree(include: ['*.jar'], dir: '../cpp/javaNative')
-//    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
 }
